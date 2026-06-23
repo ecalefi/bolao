@@ -33,7 +33,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 MERCADOPAGO_ACCESS_TOKEN=
 API_FOOTBALL_KEY=
-N8N_WEBHOOK_BASE_URL=
+N8N_WEBHOOK_URL=
 CRON_SECRET=
 APP_BASE_URL=
 ```
@@ -48,7 +48,7 @@ Como a API-Football v3 é REST, o alerta é feito por polling:
 cron/n8n -> POST /api/jobs/monitor-goals?fixtureId=ID
          -> GET /fixtures/events?fixture=ID
          -> deduplica eventos Goal no Supabase
-         -> POST n8n /goal_detected
+         -> POST n8n webhook único com { event: "goal_detected", ...payload }
          -> WhatsApp
 ```
 

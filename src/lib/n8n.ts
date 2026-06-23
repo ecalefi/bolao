@@ -7,11 +7,11 @@ type N8nEvent =
   | "match_finished";
 
 export const dispatchN8nEvent = async (event: N8nEvent, payload: Record<string, unknown>) => {
-  if (!env.n8nWebhookBaseUrl) {
+  if (!env.n8nWebhookUrl) {
     return { skipped: true };
   }
 
-  const response = await fetch(`${env.n8nWebhookBaseUrl}/${event}`, {
+  const response = await fetch(env.n8nWebhookUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

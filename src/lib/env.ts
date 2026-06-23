@@ -30,8 +30,8 @@ export const env = {
   get apiFootballBrazilTeamId() {
     return Number(process.env.API_FOOTBALL_BRAZIL_TEAM_ID ?? "6");
   },
-  get n8nWebhookBaseUrl() {
-    return process.env.N8N_WEBHOOK_BASE_URL;
+  get n8nWebhookUrl() {
+    return process.env.N8N_WEBHOOK_URL ?? process.env.N8N_WEBHOOK_BASE_URL;
   },
   get n8nWebhookSecret() {
     return process.env.N8N_WEBHOOK_SECRET;
