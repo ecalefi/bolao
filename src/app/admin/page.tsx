@@ -1,4 +1,5 @@
 import { AdminCreateGroupForm } from "@/components/admin-create-group-form";
+import { AdminCreateMatchForm } from "@/components/admin-create-match-form";
 
 export default function AdminPage() {
   return (
@@ -16,7 +17,10 @@ export default function AdminPage() {
             <div className="rounded-2xl bg-white/80 p-4 ring-1 ring-white">PIX Mercado Pago</div>
           </div>
         </section>
-        <AdminCreateGroupForm />
+        <div>
+          <AdminCreateGroupForm />
+          <AdminCreateMatchForm />
+        </div>
       </div>
     </main>
   );
