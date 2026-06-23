@@ -1,0 +1,249 @@
+COPIE E IMPORTE ESTE JSON NO n8n
+
+Este fluxo corrige o problema do payload chegar dentro de `body`.
+Ele normaliza automaticamente:
+
+  $json.body.event -> $json.event
+  $json.body.phone -> $json.number
+  $json.body.code  -> usado na mensagem OTP
+
+IMPORTANTE:
+Substitua no nó "Enviar WhatsApp" as variáveis abaixo ou configure no ambiente do n8n:
+
+WHATSAPP_API_URL
+WHATSAPP_API_KEY
+WHATSAPP_INSTANCE
+
+Formato esperado para Evolution API:
+
+POST {{$env.WHATSAPP_API_URL}}/message/sendText/{{$env.WHATSAPP_INSTANCE}}
+Header: apikey={{$env.WHATSAPP_API_KEY}}
+Body:
+{
+  "number": "5561999999999",
+  "text": "mensagem"
+}
+
+==================== JSON ====================
+
+{
+  "name": "Bolao - WhatsApp Notifications Corrigido",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bolao",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-bolao",
+      "name": "Webhook Bolao",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        120
+      ],
+      "webhookId": "bolao"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json.body ?? $json;\n\nconst event = payload.event;\nlet text = '';\n\nif (event === 'otp_requested') {\n  text = `🔐 Seu código do Bolão é: ${payload.code}\\n\\nEle expira em ${payload.expiresInMinutes || 10} minutos.\\n\\nGrupo: ${payload.groupName || 'Bolão'}`;\n}\n\nif (event === 'payment_confirmed') {\n  text = `✅ Pagamento confirmado!\\n\\nOlá, ${payload.userName || ''}. Seu acesso ao ${payload.groupName || 'Bolão'} foi liberado. Você já pode registrar ou alterar seus palpites.`;\n}\n\nif (event === 'bet_registered') {\n  text = `📝 Palpite registrado!\\n\\n${payload.match || ''}\\nSeu palpite: ${payload.prediction || ''}\\n\\nBoa sorte, ${payload.userName || ''}!`;\n}\n\nif (event === 'goal_detected') {\n  text = `⚽ GOOOOOL!\\n\\n${payload.match || ''}\\n${payload.score || ''}\\n\\nTime: ${payload.team || ''}${payload.player ? '\\nJogador: ' + payload.player : ''}${payload.minute ? '\\nMinuto: ' + payload.minute : ''}`;\n}\n\nreturn [\n  {\n    json: {\n      ...payload,\n      event,\n      number: payload.phone || payload.number || '',\n      text,\n      shouldSend: Boolean((payload.phone || payload.number) && text),\n    },\n  },\n];"
+      },
+      "id": "normalizar-payload",
+      "name": "Normalizar Payload e Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-phone",
+              "leftValue": "={{ $json.number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "has-text",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "tem-telefone-e-texto",
+      "name": "Tem telefone e mensagem?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_API_URL + '/message/sendText/' + $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "enviar-whatsapp",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, event: $json.event, sent: true, phone: $json.number } }}",
+        "options": {}
+      },
+      "id": "responder-ok-enviado",
+      "name": "Responder OK - Enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, event: $json.event, sent: false, reason: 'missing_phone_or_text' } }}",
+        "options": {}
+      },
+      "id": "responder-ok-nao-enviado",
+      "name": "Responder OK - Não Enviado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -20,
+        220
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Bolao": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Payload e Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Payload e Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Tem telefone e mensagem?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem telefone e mensagem?": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder OK - Não Enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Responder OK - Enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
+==================== TESTE RÁPIDO ====================
+
+Envie este JSON manualmente no webhook para testar OTP:
+
+{
+  "event": "otp_requested",
+  "groupName": "Bolao Calefis",
+  "userName": "Calefi",
+  "phone": "5561991937376",
+  "code": "123456",
+  "expiresInMinutes": 10
+}
+
+Se o webhook do n8n mostrar payload dentro de `body`, este fluxo também funciona.
