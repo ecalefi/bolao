@@ -14,7 +14,7 @@ export default function AdminPage() {
           </p>
           <div className="mt-8 grid gap-3 text-sm text-slate-700 md:grid-cols-4">
             <div className="rounded-2xl bg-white p-4 ring-1 ring-emerald-100"><strong>1.</strong> Criar grupo</div>
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-emerald-100"><strong>2.</strong> Cadastrar jogo</div>
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-emerald-100"><strong>2.</strong> Escolher jogo</div>
             <div className="rounded-2xl bg-white p-4 ring-1 ring-emerald-100"><strong>3.</strong> Enviar link</div>
             <div className="rounded-2xl bg-white p-4 ring-1 ring-emerald-100"><strong>4.</strong> Gerir palpites</div>
           </div>
@@ -37,7 +37,7 @@ export default function AdminPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-800">Partida</p>
               <h2 className="mt-2 text-2xl font-black">2. Jogo do grupo</h2>
               <p className="mt-2 text-sm leading-6 text-emerald-950/80">
-                Vincule o próximo jogo ao slug do grupo. Sem isso, os participantes não verão o formulário de palpite.
+                Busque os jogos disponíveis por data e escolha qual partida vale para esse grupo.
               </p>
             </div>
             <AdminCreateMatchForm />
@@ -56,7 +56,7 @@ export default function AdminPage() {
         </section>
 
         <div className="mt-8 rounded-3xl bg-white/80 p-5 text-sm leading-6 text-slate-600 ring-1 ring-white">
-          <strong className="text-slate-950">Dica:</strong> para cada novo bolão, repita o fluxo: criar grupo → cadastrar o jogo pelo slug → compartilhar o link privado.
+          <strong className="text-slate-950">Dica:</strong> para cada novo bolão, repita o fluxo: criar grupo → escolher o jogo pelo slug → compartilhar o link privado.
         </div>
       </div>
     </main>

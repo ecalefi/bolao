@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { getFixtureById } from "@/lib/api-football";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
 const createManualMatchSchema = z.object({
   groupSlug: z.string().trim().min(3),
-  homeTeam: z.string().trim().min(2),
-  awayTeam: z.string().trim().min(2),
-  startsAt: z.string().datetime(),
+  homeTeam: z.string().trim().min(2).optional(),
+  awayTeam: z.string().trim().min(2).optional(),
+  startsAt: z.string().datetime().optional(),
   apiFootballFixtureId: z.coerce.number().int().optional(),
 });
 
@@ -31,20 +32,33 @@ export async function POST(request: Request) {
       return Response.json({ error: "Grupo não encontrado." }, { status: 404 });
     }
 
-    const fixtureId = apiFootballFixtureId ?? -Date.now();
+    const fixture = apiFootballFixtureId ? await getFixtureById(apiFootballFixtureId) : null;
+
+    if (!fixture && (!homeTeam || !awayTeam || !startsAt)) {
+      return Response.json(
+        { error: "Selecione um jogo disponível ou preencha mandante, visitante e data/hora manualmente." },
+        { status: 400 },
+      );
+    }
+
+    const fixtureId = fixture?.fixture.id ?? apiFootballFixtureId ?? -Date.now();
 
     const { data: match, error: matchError } = await supabase
       .from("matches")
       .upsert(
         {
           api_football_fixture_id: fixtureId,
-          home_team: homeTeam,
-          away_team: awayTeam,
-          starts_at: startsAt,
-          status: "scheduled",
-          home_score: 0,
-          away_score: 0,
-          raw_payload: { source: "manual_admin" },
+          home_team_id: fixture?.teams.home.id ?? null,
+          away_team_id: fixture?.teams.away.id ?? null,
+          home_team: fixture?.teams.home.name ?? homeTeam,
+          away_team: fixture?.teams.away.name ?? awayTeam,
+          starts_at: fixture?.fixture.date ?? startsAt,
+          status: fixture?.fixture.status.short ?? "scheduled",
+          home_score: fixture?.goals.home ?? 0,
+          away_score: fixture?.goals.away ?? 0,
+          elapsed: fixture?.fixture.status.elapsed ?? null,
+          last_synced_at: fixture ? new Date().toISOString() : null,
+          raw_payload: fixture ?? { source: "manual_admin" },
         },
         { onConflict: "api_football_fixture_id" },
       )

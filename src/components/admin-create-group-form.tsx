@@ -47,8 +47,12 @@ export function AdminCreateGroupForm() {
       </label>
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
-        Identificador do link
+        Slug do grupo
         <input className={inputClass} name="slug" placeholder="familia-copa" required />
+        <span className="mt-2 block text-xs leading-5 text-slate-500">
+          O slug é o identificador do bolão. Ele aparece no link e será usado para cadastrar jogos e consultar palpites.
+          Exemplo: <strong>familia-copa</strong>. Guarde esse nome.
+        </span>
       </label>
 
       <label className="mt-4 block text-sm font-medium text-slate-700">
@@ -67,6 +71,14 @@ export function AdminCreateGroupForm() {
       {error ? <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {result ? (
         <div className="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-950 ring-1 ring-emerald-100">
+          <strong>Slug do grupo:</strong>
+          <code className="mt-2 block rounded-xl bg-white p-3 text-emerald-900 ring-1 ring-emerald-100">
+            {result.slug}
+          </code>
+          <p className="mt-3 text-xs leading-5 text-emerald-800">
+            Enviamos esse slug e o link privado para o WhatsApp admin cadastrado.
+          </p>
+          <div className="my-4 h-px bg-emerald-100" />
           <strong>Link privado gerado:</strong>
           <code className="mt-2 block break-all rounded-xl bg-white p-3 text-emerald-900 ring-1 ring-emerald-100">
             {`${location.origin}/bolao/${result.slug}?invite=${result.invite_token}`}

@@ -2,17 +2,100 @@
 
 import { FormEvent, useState } from "react";
 
+type AvailableMatch = {
+  fixtureId: number;
+  startsAt: string;
+  status: string;
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    round: string;
+    season: number;
+  } | null;
+  homeTeam: { id: number; name: string };
+  awayTeam: { id: number; name: string };
+};
+
+const dateInSaoPaulo = () =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
 export function AdminCreateMatchForm() {
   const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [groupSlug, setGroupSlug] = useState("");
+  const [date, setDate] = useState(dateInSaoPaulo());
+  const [matches, setMatches] = useState<AvailableMatch[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [savingFixtureId, setSavingFixtureId] = useState<number | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
 
   const inputClass =
     "mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 placeholder:text-slate-400 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:ring-2";
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const formatDateTime = (value: string) =>
+    new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "America/Sao_Paulo",
+    }).format(new Date(value));
+
+  const loadMatches = async () => {
+    setMessage(null);
+    setLoadingMatches(true);
+
+    const response = await fetch(`/api/admin/available-matches?date=${encodeURIComponent(date)}`);
+    const json = await response.json();
+    setLoadingMatches(false);
+
+    if (!response.ok) {
+      setMessage(json.error ?? "Erro ao buscar jogos disponíveis.");
+      return;
+    }
+
+    setMatches(json.matches ?? []);
+    if ((json.matches ?? []).length === 0) {
+      setMessage("Nenhum jogo disponível para essa data. Tente outra data ou use o cadastro manual.");
+    }
+  };
+
+  const selectMatch = async (match: AvailableMatch) => {
+    if (!groupSlug.trim()) {
+      setMessage("Informe o slug do grupo antes de escolher o jogo.");
+      return;
+    }
+
+    setMessage(null);
+    setSavingFixtureId(match.fixtureId);
+
+    const response = await fetch("/api/admin/matches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        groupSlug,
+        apiFootballFixtureId: match.fixtureId,
+      }),
+    });
+
+    const json = await response.json();
+    setSavingFixtureId(null);
+
+    if (!response.ok) {
+      setMessage(json.error?.formErrors?.[0] ?? json.error ?? "Erro ao vincular jogo.");
+      return;
+    }
+
+    setMessage(`Jogo vinculado ao grupo: ${json.match.home_team} x ${json.match.away_team}`);
+  };
+
+  const submitManual = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    setLoading(true);
+    setSavingFixtureId(-1);
 
     const form = new FormData(event.currentTarget);
     const localStartsAt = String(form.get("startsAt"));
@@ -23,7 +106,7 @@ export function AdminCreateMatchForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        groupSlug: form.get("groupSlug"),
+        groupSlug,
         homeTeam: form.get("homeTeam"),
         awayTeam: form.get("awayTeam"),
         startsAt,
@@ -32,7 +115,7 @@ export function AdminCreateMatchForm() {
     });
 
     const json = await response.json();
-    setLoading(false);
+    setSavingFixtureId(null);
 
     if (!response.ok) {
       setMessage(json.error?.formErrors?.[0] ?? json.error ?? "Erro ao cadastrar jogo.");
@@ -43,44 +126,113 @@ export function AdminCreateMatchForm() {
   };
 
   return (
-    <form className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100" onSubmit={submit}>
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Jogo manual</p>
-      <h2 className="mt-2 text-2xl font-black text-slate-950">Cadastrar próximo jogo</h2>
+    <div className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
+      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Escolha automática</p>
+      <h2 className="mt-2 text-2xl font-black text-slate-950">Selecionar jogo disponível</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Use quando a API não retornar o jogo automaticamente. O fixture ID é opcional, mas necessário depois para monitorar gols ao vivo.
+        Busque jogos disponíveis na API por data e escolha qual partida esse grupo vai usar no bolão.
       </p>
 
       <label className="mt-5 block text-sm font-medium text-slate-700">
         Slug do grupo
-        <input className={inputClass} name="groupSlug" placeholder="Ex.: sedes" required />
+        <input
+          className={inputClass}
+          name="groupSlug"
+          onChange={(event) => setGroupSlug(event.target.value)}
+          placeholder="Ex.: familia-copa"
+          required
+          value={groupSlug}
+        />
       </label>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <label className="block text-sm font-medium text-slate-700">
-          Mandante
-          <input className={inputClass} defaultValue="Escócia" name="homeTeam" required />
+          Data dos jogos
+          <input className={inputClass} onChange={(event) => setDate(event.target.value)} type="date" value={date} />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
-          Visitante
-          <input className={inputClass} defaultValue="Brasil" name="awayTeam" required />
-        </label>
+        <button
+          className="rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+          disabled={loadingMatches}
+          onClick={loadMatches}
+          type="button"
+        >
+          {loadingMatches ? "Buscando..." : "Buscar jogos"}
+        </button>
       </div>
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
-        Data e hora
-        <input className={inputClass} name="startsAt" required type="datetime-local" />
-      </label>
+      {matches.length > 0 ? (
+        <div className="mt-5 max-h-[32rem] space-y-3 overflow-auto pr-1">
+          {matches.map((match) => (
+            <div key={match.fixtureId} className="rounded-2xl border border-slate-200 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-700">
+                    {match.league ? `${match.league.name} • ${match.league.country}` : "Competição não informada"}
+                  </p>
+                  <h3 className="mt-2 text-lg font-black text-slate-950">
+                    {match.homeTeam.name} x {match.awayTeam.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {formatDateTime(match.startsAt)} • Status {match.status} • Fixture {match.fixtureId}
+                  </p>
+                </div>
+                <button
+                  className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-bold text-emerald-950 transition hover:bg-yellow-200 disabled:opacity-60"
+                  disabled={savingFixtureId === match.fixtureId}
+                  onClick={() => selectMatch(match)}
+                  type="button"
+                >
+                  {savingFixtureId === match.fixtureId ? "Vinculando..." : "Usar este jogo"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
-      <label className="mt-4 block text-sm font-medium text-slate-700">
-        API-Football Fixture ID opcional
-        <input className={inputClass} name="apiFootballFixtureId" placeholder="Ex.: 1234567" type="number" />
-      </label>
-
-      <button className="mt-6 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60" disabled={loading}>
-        {loading ? "Cadastrando..." : "Cadastrar jogo"}
+      <button
+        className="mt-5 text-sm font-semibold text-emerald-700 underline underline-offset-4"
+        onClick={() => setManualOpen((current) => !current)}
+        type="button"
+      >
+        {manualOpen ? "Ocultar cadastro manual" : "Não achei o jogo? Cadastrar manualmente"}
       </button>
 
+      {manualOpen ? (
+        <form className="mt-5 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200" onSubmit={submitManual}>
+          <p className="text-sm font-bold text-slate-950">Cadastro manual de fallback</p>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="block text-sm font-medium text-slate-700">
+              Mandante
+              <input className={inputClass} name="homeTeam" required />
+            </label>
+            <label className="block text-sm font-medium text-slate-700">
+              Visitante
+              <input className={inputClass} name="awayTeam" required />
+            </label>
+          </div>
+
+          <label className="mt-4 block text-sm font-medium text-slate-700">
+            Data e hora
+            <input className={inputClass} name="startsAt" required type="datetime-local" />
+          </label>
+
+          <label className="mt-4 block text-sm font-medium text-slate-700">
+            API-Football Fixture ID opcional
+            <input className={inputClass} name="apiFootballFixtureId" placeholder="Ex.: 1234567" type="number" />
+          </label>
+
+          <button
+            className="mt-5 w-full rounded-full bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+            disabled={savingFixtureId === -1}
+          >
+            {savingFixtureId === -1 ? "Cadastrando..." : "Cadastrar jogo manual"}
+          </button>
+        </form>
+      ) : null}
+
       {message ? <p className="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-900">{message}</p> : null}
-    </form>
+    </div>
   );
 }

@@ -16,6 +16,13 @@ export type ApiFootballFixture = {
       elapsed: number | null;
     };
   };
+  league?: {
+    id: number;
+    name: string;
+    country: string;
+    season: number;
+    round: string;
+  };
   teams: {
     home: { id: number; name: string };
     away: { id: number; name: string };
@@ -62,6 +69,13 @@ export const getNextBrazilFixtures = async (next = 1) => {
   const data = await apiFootballFetch<ApiFootballFixture[]>(
     `/fixtures?team=${env.apiFootballBrazilTeamId}&next=${next}`,
   );
+
+  return data.response;
+};
+
+export const getFixturesByDate = async (date: string, timezone = "America/Sao_Paulo") => {
+  const params = new URLSearchParams({ date, timezone });
+  const data = await apiFootballFetch<ApiFootballFixture[]>(`/fixtures?${params.toString()}`);
 
   return data.response;
 };
