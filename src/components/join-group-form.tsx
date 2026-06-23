@@ -29,6 +29,16 @@ type PaymentResult = {
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 
+const formatWhatsappInput = (value: string) => {
+  const digits = value.replace(/\D/g, "").replace(/^55/, "").slice(0, 11);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 const safeReadJson = async (response: Response) => {
   const text = await response.text();
 
@@ -323,8 +333,8 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none ring-emerald-500 transition focus:ring-2"
           required
           value={whatsapp}
-          onChange={(event) => setWhatsapp(event.target.value)}
-          placeholder="Ex.: 11999999999"
+          onChange={(event) => setWhatsapp(formatWhatsappInput(event.target.value))}
+          placeholder="Ex.: (61) 99193-7376"
         />
       </label>
       <button
