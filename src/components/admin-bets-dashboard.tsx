@@ -105,7 +105,7 @@ export function AdminBetsDashboard() {
   };
 
   return (
-    <section className="mt-6 rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
+    <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Gestão do grupo</p>
       <h2 className="mt-2 text-2xl font-black text-slate-950">Ver palpites dos participantes</h2>
 
