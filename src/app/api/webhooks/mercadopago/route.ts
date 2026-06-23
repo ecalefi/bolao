@@ -1,5 +1,5 @@
-import { dispatchN8nEvent } from "@/lib/n8n";
 import { getPayment, mapMercadoPagoStatus } from "@/lib/mercadopago";
+import { refreshPaymentStatus } from "@/lib/payments";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -29,41 +29,7 @@ export async function POST(request: Request) {
   }
 
   if (status === "approved") {
-    await supabase
-      .from("group_members")
-      .update({ status: "paid", paid_at: new Date().toISOString() })
-      .eq("group_id", payment.group_id)
-      .eq("participant_id", payment.participant_id);
-
-    const { data: context } = await supabase
-      .from("group_members")
-      .select("betting_groups(name),participants(name,whatsapp)")
-      .eq("group_id", payment.group_id)
-      .eq("participant_id", payment.participant_id)
-      .single();
-
-    const typedContext = context as unknown as {
-      betting_groups: { name: string } | null;
-      participants: { name: string; whatsapp: string } | null;
-    } | null;
-
-    await dispatchN8nEvent("payment_confirmed", {
-      groupId: payment.group_id,
-      participantId: payment.participant_id,
-      amountCents: payment.amount_cents,
-      groupName: typedContext?.betting_groups?.name,
-      userName: typedContext?.participants?.name,
-      phone: typedContext?.participants?.whatsapp,
-    }).catch(async (dispatchError) => {
-      await supabase.from("notifications").insert({
-        group_id: payment.group_id,
-        participant_id: payment.participant_id,
-        type: "payment_confirmed",
-        status: "failed",
-        payload: { paymentId },
-        error: dispatchError instanceof Error ? dispatchError.message : "unknown",
-      });
-    });
+    await refreshPaymentStatus(payment.id);
   }
 
   return Response.json({ ok: true });

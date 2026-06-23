@@ -95,6 +95,34 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     setPayment(json.payment);
   };
 
+  const refreshPayment = async () => {
+    if (!payment) return;
+
+    setError(null);
+    setLoading(true);
+    const response = await fetch("/api/payments/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId: payment.id }),
+    });
+
+    const json = (await safeReadJson(response)) as Partial<PaymentResult> & { error?: string };
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(json.error ?? "Não foi possível verificar o pagamento.");
+      return;
+    }
+
+    if (json.payment?.status === "approved") {
+      setPayment(json.payment);
+      setError(null);
+      return;
+    }
+
+    setError("Pagamento ainda não aprovado pelo Mercado Pago. Tente novamente em alguns segundos.");
+  };
+
   if (payment) {
     return (
       <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
@@ -119,6 +147,20 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
         <p className="mt-4 text-sm text-slate-500">
           Quando o Mercado Pago confirmar o pagamento, seu acesso será liberado automaticamente e você receberá aviso no WhatsApp.
         </p>
+        {payment.status === "approved" ? (
+          <div className="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+            Pagamento confirmado! Seus palpites já estão liberados.
+          </div>
+        ) : (
+          <button
+            className="mt-5 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+            disabled={loading}
+            onClick={refreshPayment}
+          >
+            {loading ? "Verificando..." : "Já paguei, verificar pagamento"}
+          </button>
+        )}
+        {error ? <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       </section>
     );
   }
