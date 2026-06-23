@@ -20,7 +20,11 @@ export async function POST(request: Request) {
       .select("status")
       .eq("group_id", groupId)
       .eq("participant_id", participantId)
-      .single();
+      .maybeSingle();
+
+    if (!member) {
+      return Response.json({ error: "Participante ainda não entrou neste grupo." }, { status: 403 });
+    }
 
     if (member?.status === "paid") {
       return Response.json({ error: "Participante já está pago." }, { status: 409 });

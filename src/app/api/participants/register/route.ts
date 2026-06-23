@@ -33,20 +33,32 @@ export async function POST(request: Request) {
     return Response.json({ error: participantError?.message ?? "Erro ao cadastrar participante." }, { status: 500 });
   }
 
+  const { data: existingMember, error: existingMemberError } = await supabase
+    .from("group_members")
+    .select("id,status")
+    .eq("group_id", group.id)
+    .eq("participant_id", participant.id)
+    .maybeSingle();
+
+  if (existingMemberError) {
+    return Response.json({ error: existingMemberError.message }, { status: 500 });
+  }
+
+  if (existingMember) {
+    return Response.json({ group, participant, member: existingMember });
+  }
+
   const { data: member, error: memberError } = await supabase
     .from("group_members")
-    .upsert(
-      {
-        group_id: group.id,
-        participant_id: participant.id,
-        status: "pending_payment",
-      },
-      { onConflict: "group_id,participant_id", ignoreDuplicates: true },
-    )
+    .insert({
+      group_id: group.id,
+      participant_id: participant.id,
+      status: "pending_payment",
+    })
     .select("id,status")
     .single();
 
-  if (memberError && memberError.code !== "23505") {
+  if (memberError) {
     return Response.json({ error: memberError.message }, { status: 500 });
   }
 
