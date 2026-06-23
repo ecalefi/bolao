@@ -1,3 +1,4 @@
+import { getSessionTokenFromRequest, requireParticipantSession } from "@/lib/auth";
 import { dispatchN8nEvent } from "@/lib/n8n";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 import { upsertBetSchema } from "@/lib/validation";
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
 
   const supabase = createSupabaseAdmin();
   const { groupId, participantId, matchId, homeScorePrediction, awayScorePrediction } = parsed.data;
+
+  await requireParticipantSession(participantId, getSessionTokenFromRequest(request));
 
   const { data: member } = await supabase
     .from("group_members")

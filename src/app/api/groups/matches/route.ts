@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { requireParticipantSession } from "@/lib/auth";
 import { getNextBrazilFixtures } from "@/lib/api-football";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -11,6 +12,10 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createSupabaseAdmin();
+
+  if (participantId) {
+    await requireParticipantSession(participantId, request.headers.get("x-participant-session"));
+  }
 
   const { data: existingMatches, error: existingMatchesError } = await supabase
     .from("group_matches")

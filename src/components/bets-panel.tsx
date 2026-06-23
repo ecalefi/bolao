@@ -25,7 +25,15 @@ type MatchPayload = {
   error?: string;
 };
 
-export function BetsPanel({ groupId, participantId }: { groupId: string; participantId: string }) {
+export function BetsPanel({
+  groupId,
+  participantId,
+  sessionToken,
+}: {
+  groupId: string;
+  participantId: string;
+  sessionToken: string;
+}) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [bets, setBets] = useState<Bet[]>([]);
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
@@ -41,7 +49,9 @@ export function BetsPanel({ groupId, participantId }: { groupId: string; partici
   useEffect(() => {
     const loadMatches = async () => {
       setLoading(true);
-      const response = await fetch(`/api/groups/matches?groupId=${groupId}&participantId=${participantId}`);
+      const response = await fetch(`/api/groups/matches?groupId=${groupId}&participantId=${participantId}`, {
+        headers: { "x-participant-session": sessionToken },
+      });
       const json = (await response.json()) as MatchPayload;
       setLoading(false);
 
@@ -69,7 +79,7 @@ export function BetsPanel({ groupId, participantId }: { groupId: string; partici
     };
 
     void loadMatches();
-  }, [groupId, participantId]);
+  }, [groupId, participantId, sessionToken]);
 
   const saveBet = async (match: Match) => {
     const prediction = predictions[match.id];
@@ -83,7 +93,7 @@ export function BetsPanel({ groupId, participantId }: { groupId: string; partici
     setSavingMatchId(match.id);
     const response = await fetch("/api/bets", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-participant-session": sessionToken },
       body: JSON.stringify({
         groupId,
         participantId,

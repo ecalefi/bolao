@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { getSessionTokenFromRequest, requireParticipantSession } from "@/lib/auth";
 import { createPixPayment } from "@/lib/mercadopago";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 import { createPaymentSchema } from "@/lib/validation";
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
 
     const supabase = createSupabaseAdmin();
     const { groupId, participantId } = parsed.data;
+
+    await requireParticipantSession(participantId, getSessionTokenFromRequest(request));
 
     const { data: member } = await supabase
       .from("group_members")

@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 
 type N8nEvent =
+  | "otp_requested"
   | "payment_confirmed"
   | "bet_registered"
   | "goal_detected"

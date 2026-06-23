@@ -7,6 +7,13 @@ type RegistrationResult = {
   group: { id: string; name: string; pix_amount_cents: number };
   participant: { id: string; name: string; whatsapp: string };
   member: { id: string; status: string } | null;
+  session?: { token: string; expiresAt: string };
+};
+
+type OtpRequestResult = {
+  group: { id: string; name: string; pix_amount_cents: number };
+  participant: { id: string; name: string; whatsapp: string };
+  otpSent: boolean;
 };
 
 type PaymentResult = {
@@ -40,16 +47,19 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [registration, setRegistration] = useState<RegistrationResult | null>(null);
+  const [otpRequest, setOtpRequest] = useState<OtpRequestResult | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [payment, setPayment] = useState<PaymentResult["payment"] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const register = async (event: FormEvent<HTMLFormElement>) => {
+  const requestOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setLoading(true);
 
-    const response = await fetch("/api/participants/register", {
+    const response = await fetch("/api/auth/request-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, whatsapp, inviteToken }),
@@ -64,7 +74,39 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
       return;
     }
 
-    setRegistration(json as RegistrationResult);
+    setOtpRequest(json as OtpRequestResult);
+  };
+
+  const verifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!otpRequest) return;
+
+    setError(null);
+    setLoading(true);
+
+    const response = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        groupId: otpRequest.group.id,
+        participantId: otpRequest.participant.id,
+        code: otpCode,
+      }),
+    });
+
+    const json = await safeReadJson(response);
+    setLoading(false);
+
+    if (!response.ok) {
+      const error = json.error as { formErrors?: string[] } | string | undefined;
+      setError(typeof error === "string" ? error : error?.formErrors?.[0] ?? "Código inválido.");
+      return;
+    }
+
+    const verified = json as RegistrationResult;
+    setRegistration(verified);
+    setSessionToken(verified.session?.token ?? null);
   };
 
   const createPayment = async () => {
@@ -74,7 +116,10 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     setLoading(true);
     const response = await fetch("/api/payments/create", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(sessionToken ? { "x-participant-session": sessionToken } : {}),
+      },
       body: JSON.stringify({
         groupId: registration.group.id,
         participantId: registration.participant.id,
@@ -104,7 +149,10 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     setLoading(true);
     const response = await fetch("/api/payments/refresh", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(sessionToken ? { "x-participant-session": sessionToken } : {}),
+      },
       body: JSON.stringify({ paymentId: payment.id }),
     });
 
@@ -154,7 +202,9 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
             <div className="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
               Pagamento confirmado! Seus palpites já estão liberados.
             </div>
-            {registration ? <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} /> : null}
+            {registration && sessionToken ? (
+              <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
+            ) : null}
           </>
         ) : (
           <button
@@ -171,13 +221,13 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   }
 
   if (registration) {
-    if (registration.member?.status === "paid") {
+    if (registration.member?.status === "paid" && sessionToken) {
       return (
         <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Acesso liberado</p>
           <h2 className="mt-2 text-2xl font-bold text-slate-950">Olá, {registration.participant.name}</h2>
           <p className="mt-2 text-slate-600">Pagamento já confirmado. Você pode ver ou alterar seus palpites abaixo.</p>
-          <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} />
+          <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
         </section>
       );
     }
@@ -201,8 +251,50 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     );
   }
 
+  if (otpRequest) {
+    return (
+      <form className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100" onSubmit={verifyOtp}>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Verificação WhatsApp</p>
+        <h2 className="mt-2 text-2xl font-bold text-slate-950">Digite o código enviado</h2>
+        <p className="mt-2 text-slate-600">
+          Enviamos um código de 6 dígitos para o WhatsApp {otpRequest.participant.whatsapp}.
+        </p>
+        <label className="mt-6 block text-sm font-medium text-slate-700">
+          Código
+          <input
+            className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-center text-2xl font-bold tracking-[0.35em] text-slate-950 outline-none ring-emerald-500 transition focus:ring-2"
+            inputMode="numeric"
+            maxLength={6}
+            required
+            value={otpCode}
+            onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000"
+          />
+        </label>
+        <button
+          className="mt-6 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+          disabled={loading}
+        >
+          {loading ? "Verificando..." : "Confirmar código"}
+        </button>
+        <button
+          className="mt-3 w-full rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+          disabled={loading}
+          type="button"
+          onClick={() => {
+            setOtpRequest(null);
+            setOtpCode("");
+          }}
+        >
+          Trocar WhatsApp
+        </button>
+        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+      </form>
+    );
+  }
+
   return (
-    <form className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100" onSubmit={register}>
+    <form className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100" onSubmit={requestOtp}>
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Entrar no bolão</p>
       <h2 className="mt-2 text-2xl font-bold text-slate-950">Identifique-se para participar</h2>
       <label className="mt-6 block text-sm font-medium text-slate-700">
@@ -229,7 +321,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
         className="mt-6 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
         disabled={loading}
       >
-        {loading ? "Entrando..." : "Continuar"}
+        {loading ? "Enviando código..." : "Enviar código por WhatsApp"}
       </button>
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
     </form>

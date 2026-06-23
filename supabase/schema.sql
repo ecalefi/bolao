@@ -117,6 +117,31 @@ create table public.notifications (
   created_at timestamptz not null default now()
 );
 
+create table public.participant_otps (
+  id uuid primary key default gen_random_uuid(),
+  participant_id uuid not null references public.participants(id) on delete cascade,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  attempts integer not null default 0,
+  consumed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index participant_otps_participant_created_idx
+  on public.participant_otps(participant_id, created_at desc);
+
+create table public.participant_sessions (
+  id uuid primary key default gen_random_uuid(),
+  participant_id uuid not null references public.participants(id) on delete cascade,
+  token_hash text not null unique,
+  expires_at timestamptz not null,
+  revoked_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index participant_sessions_participant_idx
+  on public.participant_sessions(participant_id, expires_at desc);
+
 alter table public.participants enable row level security;
 alter table public.betting_groups enable row level security;
 alter table public.group_members enable row level security;
@@ -126,6 +151,8 @@ alter table public.group_matches enable row level security;
 alter table public.bets enable row level security;
 alter table public.match_events enable row level security;
 alter table public.notifications enable row level security;
+alter table public.participant_otps enable row level security;
+alter table public.participant_sessions enable row level security;
 
 create policy "public can read active groups by invite" on public.betting_groups
   for select using (status = 'active');

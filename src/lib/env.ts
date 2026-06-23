@@ -42,4 +42,7 @@ export const env = {
   get cronSecret() {
     return requireEnv("CRON_SECRET");
   },
+  get otpSecret() {
+    return process.env.OTP_SECRET ?? this.cronSecret;
+  },
 };
