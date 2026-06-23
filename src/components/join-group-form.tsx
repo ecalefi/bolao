@@ -1,10 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { BetsPanel } from "@/components/bets-panel";
 
 type RegistrationResult = {
   group: { id: string; name: string; pix_amount_cents: number };
   participant: { id: string; name: string; whatsapp: string };
+  member: { id: string; status: string } | null;
 };
 
 type PaymentResult = {
@@ -148,9 +150,12 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           Quando o Mercado Pago confirmar o pagamento, seu acesso será liberado automaticamente e você receberá aviso no WhatsApp.
         </p>
         {payment.status === "approved" ? (
-          <div className="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-            Pagamento confirmado! Seus palpites já estão liberados.
-          </div>
+          <>
+            <div className="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+              Pagamento confirmado! Seus palpites já estão liberados.
+            </div>
+            {registration ? <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} /> : null}
+          </>
         ) : (
           <button
             className="mt-5 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
@@ -166,6 +171,17 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   }
 
   if (registration) {
+    if (registration.member?.status === "paid") {
+      return (
+        <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Acesso liberado</p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-950">Olá, {registration.participant.name}</h2>
+          <p className="mt-2 text-slate-600">Pagamento já confirmado. Você pode ver ou alterar seus palpites abaixo.</p>
+          <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} />
+        </section>
+      );
+    }
+
     return (
       <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Identificação concluída</p>
