@@ -25,6 +25,11 @@ type MatchPayload = {
   error?: string;
 };
 
+type BetPayload = {
+  bet?: Bet;
+  error?: string;
+};
+
 const safeReadJson = async (response: Response): Promise<MatchPayload> => {
   const text = await response.text();
 
@@ -34,6 +39,18 @@ const safeReadJson = async (response: Response): Promise<MatchPayload> => {
     return JSON.parse(text) as MatchPayload;
   } catch {
     return { matches: [], bets: [], error: text } satisfies MatchPayload;
+  }
+};
+
+const safeReadBetJson = async (response: Response): Promise<BetPayload> => {
+  const text = await response.text();
+
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text) as BetPayload;
+  } catch {
+    return { error: text };
   }
 };
 
@@ -120,7 +137,7 @@ export function BetsPanel({
         awayScorePrediction: Number(prediction.away),
       }),
     });
-    const json = await response.json();
+    const json = await safeReadBetJson(response);
     setSavingMatchId(null);
 
     if (!response.ok) {
@@ -128,10 +145,12 @@ export function BetsPanel({
       return;
     }
 
-    setBets((current) => [
-      ...current.filter((bet) => bet.match_id !== match.id),
-      { ...json.bet, match_id: match.id, status: "open", points: null },
-    ]);
+    if (!json.bet) {
+      setMessage("Palpite não foi retornado pelo servidor.");
+      return;
+    }
+
+    setBets((current) => [...current.filter((bet) => bet.match_id !== match.id), json.bet as Bet]);
     setMessage("Palpite salvo com sucesso!");
   };
 
@@ -157,10 +176,12 @@ export function BetsPanel({
               <h4 className="mt-1 text-lg font-bold text-slate-950">
                 {match.home_team} x {match.away_team}
               </h4>
-              <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <div className="mt-4 flex items-center justify-center gap-3">
                 <input
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-lg font-bold text-slate-950 outline-none ring-emerald-500 focus:ring-2"
+                  aria-label={`Gols ${match.home_team}`}
+                  className="h-14 w-20 rounded-2xl border border-slate-200 bg-white px-3 text-center text-xl font-bold text-slate-950 outline-none ring-emerald-500 focus:ring-2"
                   min={0}
+                  max={20}
                   type="number"
                   value={predictions[match.id]?.home ?? ""}
                   onChange={(event) =>
@@ -172,8 +193,10 @@ export function BetsPanel({
                 />
                 <span className="font-bold text-slate-500">x</span>
                 <input
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-lg font-bold text-slate-950 outline-none ring-emerald-500 focus:ring-2"
+                  aria-label={`Gols ${match.away_team}`}
+                  className="h-14 w-20 rounded-2xl border border-slate-200 bg-white px-3 text-center text-xl font-bold text-slate-950 outline-none ring-emerald-500 focus:ring-2"
                   min={0}
+                  max={20}
                   type="number"
                   value={predictions[match.id]?.away ?? ""}
                   onChange={(event) =>

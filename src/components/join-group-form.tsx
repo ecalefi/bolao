@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { BetsPanel } from "@/components/bets-panel";
 
 type RegistrationResult = {
@@ -142,7 +142,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     setPayment(json.payment);
   };
 
-  const refreshPayment = async () => {
+  const refreshPayment = useCallback(async () => {
     if (!payment) return;
 
     setError(null);
@@ -171,7 +171,17 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     }
 
     setError("Pagamento ainda não aprovado pelo Mercado Pago. Tente novamente em alguns segundos.");
-  };
+  }, [payment, sessionToken]);
+
+  useEffect(() => {
+    if (!payment || payment.status === "approved" || !sessionToken) return;
+
+    const interval = window.setInterval(() => {
+      void refreshPayment();
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [payment, refreshPayment, sessionToken]);
 
   if (payment) {
     return (
@@ -195,7 +205,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           />
         ) : null}
         <p className="mt-4 text-sm text-slate-500">
-          Quando o Mercado Pago confirmar o pagamento, seu acesso será liberado automaticamente e você receberá aviso no WhatsApp.
+          Estamos verificando automaticamente o Mercado Pago a cada 5 segundos. Quando confirmar, seus palpites serão liberados.
         </p>
         {payment.status === "approved" ? (
           <>
