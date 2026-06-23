@@ -25,6 +25,18 @@ type MatchPayload = {
   error?: string;
 };
 
+const safeReadJson = async (response: Response): Promise<MatchPayload> => {
+  const text = await response.text();
+
+  if (!text) return { matches: [], bets: [] };
+
+  try {
+    return JSON.parse(text) as MatchPayload;
+  } catch {
+    return { matches: [], bets: [], error: text } satisfies MatchPayload;
+  }
+};
+
 export function BetsPanel({
   groupId,
   participantId,
@@ -48,34 +60,40 @@ export function BetsPanel({
 
   useEffect(() => {
     const loadMatches = async () => {
-      setLoading(true);
-      const response = await fetch(`/api/groups/matches?groupId=${groupId}&participantId=${participantId}`, {
-        headers: { "x-participant-session": sessionToken },
-      });
-      const json = (await response.json()) as MatchPayload;
-      setLoading(false);
+      try {
+        setLoading(true);
+        setMessage(null);
+        const response = await fetch(`/api/groups/matches?groupId=${groupId}&participantId=${participantId}`, {
+          headers: { "x-participant-session": sessionToken },
+        });
+        const json = await safeReadJson(response);
 
-      if (!response.ok) {
-        setMessage(json.error ?? "Não foi possível carregar os jogos.");
-        return;
+        if (!response.ok) {
+          setMessage(json.error ?? "Não foi possível carregar os jogos.");
+          return;
+        }
+
+        setMatches(json.matches ?? []);
+        setBets(json.bets ?? []);
+        setPredictions(
+          Object.fromEntries(
+            (json.matches ?? []).map((match) => {
+              const bet = (json.bets ?? []).find((item) => item.match_id === match.id);
+              return [
+                match.id,
+                {
+                  home: bet ? String(bet.home_score_prediction) : "",
+                  away: bet ? String(bet.away_score_prediction) : "",
+                },
+              ];
+            }),
+          ),
+        );
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Não foi possível carregar os jogos.");
+      } finally {
+        setLoading(false);
       }
-
-      setMatches(json.matches);
-      setBets(json.bets);
-      setPredictions(
-        Object.fromEntries(
-          json.matches.map((match) => {
-            const bet = json.bets.find((item) => item.match_id === match.id);
-            return [
-              match.id,
-              {
-                home: bet ? String(bet.home_score_prediction) : "",
-                away: bet ? String(bet.away_score_prediction) : "",
-              },
-            ];
-          }),
-        ),
-      );
     };
 
     void loadMatches();
