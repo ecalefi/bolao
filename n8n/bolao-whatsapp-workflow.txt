@@ -1,0 +1,606 @@
+COPIE O JSON ABAIXO E IMPORTE NO n8n
+
+Pré-requisitos no n8n:
+
+1. Configure variáveis de ambiente ou substitua direto nos nós HTTP Request:
+
+WHATSAPP_API_URL=https://sua-api-whatsapp.com
+WHATSAPP_API_KEY=sua-chave
+WHATSAPP_INSTANCE=sua-instancia
+
+2. O fluxo abaixo assume Evolution API no endpoint:
+
+POST {{$env.WHATSAPP_API_URL}}/message/sendText/{{$env.WHATSAPP_INSTANCE}}
+
+Body:
+{
+  "number": "5511999999999",
+  "text": "mensagem"
+}
+
+Se seu provedor for outro, basta trocar os 4 nós “Enviar WhatsApp ...”.
+
+3. Webhook final esperado pelo app:
+
+https://hooks.conectai.online/webhook/bolao
+
+4. Eventos tratados:
+
+- otp_requested
+- payment_confirmed
+- bet_registered
+- goal_detected
+
+==================== JSON PARA IMPORTAR ====================
+
+{
+  "name": "Bolao - WhatsApp Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bolao",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-bolao",
+      "name": "Webhook Bolao",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        120
+      ],
+      "webhookId": "bolao"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "otp_requested",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "otp_requested"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "payment_confirmed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "payment_confirmed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "bet_registered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bet_registered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "goal_detected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "goal_detected"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "switch-event",
+      "name": "Switch por Evento",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -480,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "otp-number",
+              "name": "number",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "otp-text",
+              "name": "text",
+              "value": "={{ '🔐 Seu código do Bolão é: ' + $json.code + '\n\nEle expira em ' + $json.expiresInMinutes + ' minutos.\n\nGrupo: ' + $json.groupName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-otp-message",
+      "name": "Mensagem OTP",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -220,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_API_URL + '/message/sendText/' + $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-otp-whatsapp",
+      "name": "Enviar WhatsApp OTP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        40,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "payment-number",
+              "name": "number",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "payment-text",
+              "name": "text",
+              "value": "={{ '✅ Pagamento confirmado!\n\nOlá, ' + $json.userName + '. Seu acesso ao ' + $json.groupName + ' foi liberado. Você já pode registrar ou alterar seus palpites.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-payment-message",
+      "name": "Mensagem Pagamento Confirmado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -220,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_API_URL + '/message/sendText/' + $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-payment-whatsapp",
+      "name": "Enviar WhatsApp Pagamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        40,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bet-number",
+              "name": "number",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "bet-text",
+              "name": "text",
+              "value": "={{ '📝 Palpite registrado!\n\n' + $json.match + '\nSeu palpite: ' + $json.prediction + '\n\nBoa sorte, ' + $json.userName + '!' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-bet-message",
+      "name": "Mensagem Palpite",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -220,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_API_URL + '/message/sendText/' + $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-bet-whatsapp",
+      "name": "Enviar WhatsApp Palpite",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        40,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "goal-number",
+              "name": "number",
+              "value": "={{ $json.phone || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "goal-text",
+              "name": "text",
+              "value": "={{ '⚽ GOOOOOL!\n\n' + $json.match + '\n' + $json.score + '\n\nTime: ' + $json.team + ($json.player ? '\nJogador: ' + $json.player : '') + ($json.minute ? '\nMinuto: ' + $json.minute : '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-goal-message",
+      "name": "Mensagem Gol",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -220,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_API_URL + '/message/sendText/' + $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-goal-whatsapp",
+      "name": "Enviar WhatsApp Gol",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        40,
+        420
+      ],
+      "disabled": true,
+      "notes": "Este nó está desabilitado porque o payload goal_detected atual não inclui phone. Para enviar gol a todos do grupo, crie antes uma busca dos participantes pagos no Supabase ou ajuste o backend para enviar um evento por participante."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"event\": $json.event || 'processed' }",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        340,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Bolao": {
+      "main": [
+        [
+          {
+            "node": "Switch por Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por Evento": {
+      "main": [
+        [
+          {
+            "node": "Mensagem OTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Pagamento Confirmado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Palpite",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Gol",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem OTP": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp OTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp OTP": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Pagamento Confirmado": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp Pagamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp Pagamento": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Palpite": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp Palpite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp Palpite": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Gol": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp Gol",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp Gol": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
+==================== OBSERVAÇÕES ====================
+
+1. Para OTP, pagamento e palpite, o payload já traz phone.
+2. Para goal_detected, o backend atual envia evento por grupo, sem phone individual.
+   Por isso deixei o nó “Enviar WhatsApp Gol” desabilitado.
+3. Para gol funcionar para todos, há duas opções:
+   A) adicionar no n8n uma consulta no Supabase buscando membros pagos do groupId;
+   B) alterar o backend para disparar goal_detected para cada participante pago.
+
+Recomendação: fazer a opção B no backend, pois fica mais simples e confiável.
