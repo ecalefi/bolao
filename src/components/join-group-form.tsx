@@ -20,6 +20,20 @@ type PaymentResult = {
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 
+const safeReadJson = async (response: Response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return { error: text };
+  }
+};
+
 export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -39,15 +53,16 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
       body: JSON.stringify({ name, whatsapp, inviteToken }),
     });
 
-    const json = await response.json();
+    const json = await safeReadJson(response);
     setLoading(false);
 
     if (!response.ok) {
-      setError(json.error?.formErrors?.[0] ?? json.error ?? "Não foi possível entrar no grupo.");
+      const error = json.error as { formErrors?: string[] } | string | undefined;
+      setError(typeof error === "string" ? error : error?.formErrors?.[0] ?? "Não foi possível entrar no grupo.");
       return;
     }
 
-    setRegistration(json);
+    setRegistration(json as RegistrationResult);
   };
 
   const createPayment = async () => {
@@ -64,11 +79,16 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
       }),
     });
 
-    const json = (await response.json()) as PaymentResult & { error?: string };
+    const json = (await safeReadJson(response)) as Partial<PaymentResult> & { error?: string };
     setLoading(false);
 
     if (!response.ok) {
       setError(json.error ?? "Não foi possível gerar o PIX.");
+      return;
+    }
+
+    if (!json.payment) {
+      setError("PIX não foi retornado pelo Mercado Pago.");
       return;
     }
 

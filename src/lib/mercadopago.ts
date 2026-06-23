@@ -34,7 +34,7 @@ export const createPixPayment = async (input: {
       notification_url: `${env.appBaseUrl}/api/webhooks/mercadopago`,
       payer: {
         first_name: input.participantName,
-        email: `${input.participantWhatsapp}@bolao.local`,
+        email: `bolao-${input.participantWhatsapp}@conectai.online`,
       },
     }),
   });
