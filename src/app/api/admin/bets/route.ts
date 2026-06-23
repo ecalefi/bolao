@@ -1,0 +1,46 @@
+import { NextRequest } from "next/server";
+import { requireParticipantSession } from "@/lib/auth";
+import { createSupabaseAdmin } from "@/lib/supabase/server";
+
+export async function GET(request: NextRequest) {
+  try {
+    const groupId = request.nextUrl.searchParams.get("groupId");
+    const adminParticipantId = request.nextUrl.searchParams.get("adminParticipantId");
+    const sessionToken = request.headers.get("x-participant-session");
+
+    if (!groupId || !adminParticipantId) {
+      return Response.json({ error: "groupId e adminParticipantId são obrigatórios." }, { status: 400 });
+    }
+
+    await requireParticipantSession(adminParticipantId, sessionToken);
+
+    const supabase = createSupabaseAdmin();
+    const { data: participant } = await supabase
+      .from("participants")
+      .select("whatsapp")
+      .eq("id", adminParticipantId)
+      .single();
+    const { data: group } = await supabase
+      .from("betting_groups")
+      .select("id,name,slug,admin_whatsapp")
+      .eq("id", groupId)
+      .single();
+
+    if (!participant || !group || participant.whatsapp !== group.admin_whatsapp) {
+      return Response.json({ error: "Sem permissão para visualizar este grupo." }, { status: 403 });
+    }
+
+    const { data: bets, error } = await supabase
+      .from("bets")
+      .select("id,home_score_prediction,away_score_prediction,status,points,updated_at,participants(name,whatsapp),matches(home_team,away_team,starts_at)")
+      .eq("group_id", groupId)
+      .order("updated_at", { ascending: false });
+
+    if (error) return Response.json({ error: error.message }, { status: 500 });
+
+    return Response.json({ group, bets: bets ?? [] });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao carregar palpites.";
+    return Response.json({ error: message }, { status: 500 });
+  }
+}

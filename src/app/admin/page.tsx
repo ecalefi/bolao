@@ -1,5 +1,6 @@
 import { AdminCreateGroupForm } from "@/components/admin-create-group-form";
 import { AdminCreateMatchForm } from "@/components/admin-create-match-form";
+import { AdminBetsDashboard } from "@/components/admin-bets-dashboard";
 
 export default function AdminPage() {
   return (
@@ -20,6 +21,7 @@ export default function AdminPage() {
         <div>
           <AdminCreateGroupForm />
           <AdminCreateMatchForm />
+          <AdminBetsDashboard />
         </div>
       </div>
     </main>
