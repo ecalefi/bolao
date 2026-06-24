@@ -42,9 +42,7 @@ const formatWhatsappInput = (value: string) => {
 const safeReadJson = async (response: Response) => {
   const text = await response.text();
 
-  if (!text) {
-    return {};
-  }
+  if (!text) return {};
 
   try {
     return JSON.parse(text) as Record<string, unknown>;
@@ -59,16 +57,16 @@ function ProgressBar({ step }: { step: 1 | 2 | 3 }) {
       {[1, 2, 3].map((s) => (
         <div key={s} className="flex flex-1 items-center gap-2">
           <div
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black transition ${
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-xs transition-all duration-200 ${
               s <= step
-                ? "bg-emerald-700 text-white"
-                : "bg-slate-100 text-slate-400"
+                ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                : "bg-slate-800 text-slate-500 ring-1 ring-slate-700"
             }`}
           >
             {s < step ? "✓" : s}
           </div>
           {s < 3 ? (
-            <div className={`h-1 flex-1 rounded-full transition ${s < step ? "bg-emerald-700" : "bg-slate-100"}`} />
+            <div className={`h-1 flex-1 rounded-full transition-all duration-200 ${s < step ? "bg-violet-600" : "bg-slate-800"}`} />
           ) : null}
         </div>
       ))}
@@ -87,11 +85,13 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const cardClass = "rounded-3xl bg-white p-6 text-slate-950 shadow-2xl shadow-black/20 ring-1 ring-white/20";
+  const cardClass = "rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-slate-100 shadow-2xl shadow-violet-900/20 backdrop-blur-sm";
   const inputClass =
-    "mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-950 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:bg-white focus:ring-2";
+    "mt-2 w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-4 text-slate-100 outline-none ring-violet-500 transition focus:border-violet-500 focus:bg-slate-900 focus:ring-2";
   const primaryButtonClass =
-    "mt-6 w-full rounded-full bg-emerald-700 px-6 py-4 font-black text-white shadow-lg shadow-emerald-700/20 transition hover:-translate-y-0.5 hover:bg-emerald-800 disabled:opacity-60";
+    "mt-6 w-full cursor-pointer rounded-full bg-rose-500 px-6 py-4 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 hover:shadow-rose-500/40 disabled:cursor-not-allowed disabled:opacity-60";
+  const secondaryButtonClass =
+    "mt-3 w-full cursor-pointer rounded-full border border-slate-600 bg-slate-800/50 px-6 py-4 font-bold text-slate-300 transition-colors duration-200 hover:bg-slate-800 disabled:opacity-60";
 
   const requestOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -226,29 +226,29 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     return (
       <section className={cardClass}>
         <ProgressBar step={2} />
-        <h2 className="text-3xl font-black text-slate-950">Pague o PIX para entrar no jogo</h2>
-        <p className="mt-2 text-slate-600">Valor do bolão: <strong>{formatCurrency(payment.amount_cents)}</strong></p>
+        <h2 className="font-display text-3xl">Pague o PIX para entrar no jogo</h2>
+        <p className="mt-2 text-slate-400">Valor do bolão: <strong className="text-rose-400">{formatCurrency(payment.amount_cents)}</strong></p>
         {payment.pix_qr_code_base64 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             alt="QR Code PIX"
-            className="mx-auto mt-5 h-56 w-56 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm"
+            className="mx-auto mt-5 h-56 w-56 rounded-xl border border-slate-700 bg-white p-3 shadow-lg"
             src={`data:image/png;base64,${payment.pix_qr_code_base64}`}
           />
         ) : null}
         {payment.pix_qr_code ? (
           <textarea
             readOnly
-            className="mt-5 h-28 w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700"
+            className="mt-5 h-28 w-full rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400"
             value={payment.pix_qr_code}
           />
         ) : null}
-        <p className="mt-4 rounded-3xl bg-sky-50 p-4 text-sm leading-6 text-sky-900">
+        <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-4 text-sm leading-6 text-violet-300">
           Estamos verificando automaticamente o Mercado Pago a cada 5 segundos. Quando confirmar, seus palpites serão liberados.
         </p>
         {payment.status === "approved" ? (
           <>
-            <div className="mt-5 rounded-3xl bg-emerald-50 p-4 text-sm font-bold text-emerald-800">
+            <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm font-bold text-emerald-400">
               Pagamento confirmado! Seus palpites já estão liberados.
             </div>
             {registration && sessionToken ? (
@@ -264,7 +264,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
             {loading ? "Verificando..." : "Já paguei, verificar pagamento"}
           </button>
         )}
-        {error ? <p className="mt-4 rounded-3xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{error}</p> : null}
       </section>
     );
   }
@@ -272,20 +272,20 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   if (registration) {
     if (registration.member?.status === "paid" && sessionToken) {
       return (
-          <section className={cardClass}>
-            <ProgressBar step={3} />
-            <h2 className="text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
-            <p className="mt-2 text-slate-600">Pagamento já confirmado. Você pode ver ou alterar seus palpites abaixo.</p>
-            <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
-          </section>
+        <section className={cardClass}>
+          <ProgressBar step={3} />
+          <h2 className="font-display text-3xl">Olá, {registration.participant.name}</h2>
+          <p className="mt-2 text-slate-400">Pagamento já confirmado. Você pode ver ou alterar seus palpites abaixo.</p>
+          <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
+        </section>
       );
     }
 
     return (
       <section className={cardClass}>
         <ProgressBar step={2} />
-        <h2 className="text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
-        <p className="mt-2 text-slate-600">
+        <h2 className="font-display text-3xl">Olá, {registration.participant.name}</h2>
+        <p className="mt-2 text-slate-400">
           Grupo: {registration.group.name}. Valor do bolão: {formatCurrency(registration.group.pix_amount_cents)}.
         </p>
         <button
@@ -295,7 +295,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
         >
           {loading ? "Gerando..." : "Gerar PIX Mercado Pago"}
         </button>
-        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{error}</p> : null}
       </section>
     );
   }
@@ -304,14 +304,14 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     return (
       <form className={cardClass} onSubmit={verifyOtp}>
         <ProgressBar step={1} />
-        <h2 className="text-3xl font-black text-slate-950">Confirme seu WhatsApp</h2>
-        <p className="mt-2 text-slate-600">
+        <h2 className="font-display text-3xl">Confirme seu WhatsApp</h2>
+        <p className="mt-2 text-slate-400">
           Enviamos um código de 6 dígitos para o WhatsApp {otpRequest.participant.whatsapp}.
         </p>
-        <label className="mt-6 block text-sm font-medium text-slate-700">
+        <label className="mt-6 block text-sm font-medium text-slate-400">
           Código
           <input
-            className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-center text-2xl font-black tracking-[0.35em] text-slate-950 outline-none ring-emerald-500 transition focus:bg-white focus:ring-2"
+            className="mt-2 w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-4 text-center font-display text-2xl tracking-[0.35em] text-slate-100 outline-none ring-violet-500 transition focus:bg-slate-900 focus:ring-2"
             inputMode="numeric"
             maxLength={6}
             required
@@ -320,14 +320,11 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
             placeholder="000000"
           />
         </label>
-        <button
-          className={primaryButtonClass}
-          disabled={loading}
-        >
+        <button className={primaryButtonClass} disabled={loading}>
           {loading ? "Verificando..." : "Confirmar código"}
         </button>
         <button
-          className="mt-3 w-full rounded-full border border-slate-200 px-6 py-4 font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+          className={secondaryButtonClass}
           disabled={loading}
           type="button"
           onClick={() => {
@@ -337,7 +334,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
         >
           Trocar WhatsApp
         </button>
-        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{error}</p> : null}
       </form>
     );
   }
@@ -345,9 +342,9 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   return (
     <form className={cardClass} onSubmit={requestOtp}>
       <ProgressBar step={1} />
-      <h2 className="text-3xl font-black text-slate-950">Entre no bolão</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">Só precisamos do seu nome e WhatsApp para liberar seu acesso com segurança.</p>
-      <label className="mt-6 block text-sm font-medium text-slate-700">
+      <h2 className="font-display text-3xl">Entre no bolão</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-400">Só precisamos do seu nome e WhatsApp para liberar seu acesso com segurança.</p>
+      <label className="mt-6 block text-sm font-medium text-slate-400">
         Nome
         <input
           className={inputClass}
@@ -357,7 +354,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           placeholder="Ex.: João Silva"
         />
       </label>
-      <label className="mt-4 block text-sm font-medium text-slate-700">
+      <label className="mt-4 block text-sm font-medium text-slate-400">
         WhatsApp
         <input
           className={inputClass}
@@ -367,13 +364,10 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           placeholder="Ex.: (61) 99193-7376"
         />
       </label>
-      <button
-        className={primaryButtonClass}
-        disabled={loading}
-      >
+      <button className={primaryButtonClass} disabled={loading}>
         {loading ? "Enviando código..." : "Enviar código por WhatsApp"}
       </button>
-      {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{error}</p> : null}
     </form>
   );
 }

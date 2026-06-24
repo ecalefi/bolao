@@ -48,16 +48,16 @@ const initials = (name: string) =>
     .join("");
 
 const avatarColors = [
-  "bg-emerald-700",
-  "bg-sky-700",
-  "bg-violet-700",
-  "bg-rose-700",
-  "bg-amber-700",
-  "bg-cyan-700",
+  "bg-violet-600",
+  "bg-sky-600",
+  "bg-rose-600",
+  "bg-amber-600",
+  "bg-cyan-600",
+  "bg-emerald-600",
 ];
 
 const colorForName = (name: string) =>
-  avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-slate-700";
+  avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-slate-600";
 
 export function AdminBetsDashboard() {
   const [groupSlug, setGroupSlug] = useState("");
@@ -125,26 +125,37 @@ export function AdminBetsDashboard() {
   };
 
   const inputClass =
-    "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-950 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:bg-white focus:ring-2";
+    "w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-3 text-slate-100 outline-none ring-violet-500 transition focus:border-violet-500 focus:bg-slate-900 focus:ring-2";
 
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Gestão do grupo</p>
-      <h2 className="mt-2 text-2xl font-black text-slate-950">Ver palpites dos participantes</h2>
+    <section className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 shadow-xl shadow-violet-900/10 backdrop-blur-sm">
+      <p className="font-display text-sm uppercase tracking-[0.2em] text-violet-400">Gestão do grupo</p>
+      <h2 className="mt-2 font-display text-2xl text-slate-100">Ver palpites dos participantes</h2>
 
       {!otpRequest && !auth ? (
         <form className="mt-5 space-y-4" onSubmit={requestOtp}>
           <input className={inputClass} placeholder="Slug do grupo" required value={groupSlug} onChange={(e) => setGroupSlug(e.target.value)} />
           <input className={inputClass} placeholder="WhatsApp admin" required value={whatsapp} onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))} />
-          <button className="w-full rounded-full bg-emerald-700 px-6 py-3 font-bold text-white transition hover:bg-emerald-800 disabled:opacity-60" disabled={loading}>{loading ? "Enviando..." : "Enviar código admin"}</button>
+          <button className="w-full cursor-pointer rounded-full bg-rose-500 px-6 py-3 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60" disabled={loading}>
+            {loading ? "Enviando..." : "Enviar código admin"}
+          </button>
         </form>
       ) : null}
 
       {otpRequest && !auth ? (
         <form className="mt-5 space-y-4" onSubmit={verifyOtp}>
-          <p className="text-sm text-slate-600">Código enviado para {otpRequest.participant.whatsapp}.</p>
-          <input className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-2xl font-bold tracking-[0.35em] text-slate-950 outline-none ring-emerald-500 transition focus:bg-white focus:ring-2" maxLength={6} placeholder="000000" required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-          <button className="w-full rounded-full bg-emerald-700 px-6 py-3 font-bold text-white transition hover:bg-emerald-800 disabled:opacity-60" disabled={loading}>{loading ? "Verificando..." : "Validar e abrir gestão"}</button>
+          <p className="text-sm text-slate-400">Código enviado para {otpRequest.participant.whatsapp}.</p>
+          <input
+            className="w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-3 text-center font-display text-2xl tracking-[0.35em] text-slate-100 outline-none ring-violet-500 transition focus:bg-slate-900 focus:ring-2"
+            maxLength={6}
+            placeholder="000000"
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          />
+          <button className="w-full cursor-pointer rounded-full bg-rose-500 px-6 py-3 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60" disabled={loading}>
+            {loading ? "Verificando..." : "Validar e abrir gestão"}
+          </button>
         </form>
       ) : null}
 
@@ -152,43 +163,49 @@ export function AdminBetsDashboard() {
         <div className="mt-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 font-display text-sm text-white shadow-lg shadow-violet-500/30">
                 {initials(auth.participant.name)}
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-950">{auth.group.name}</p>
+                <p className="font-display text-sm text-slate-100">{auth.group.name}</p>
                 <p className="text-xs text-slate-500">Admin: {auth.participant.name}</p>
               </div>
             </div>
-            <button className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" onClick={() => loadBets()} disabled={loading}>Atualizar</button>
+            <button
+              className="cursor-pointer rounded-full border border-slate-600 bg-slate-800/50 px-4 py-2 text-sm font-bold text-slate-300 transition-colors duration-200 hover:bg-slate-800 disabled:opacity-60"
+              onClick={() => loadBets()}
+              disabled={loading}
+            >
+              Atualizar
+            </button>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {bets.map((bet) => (
-              <div key={bet.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div key={bet.id} className="rounded-xl border border-slate-700 bg-slate-900/30 p-4 transition-colors duration-200 hover:border-violet-500/40">
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white ${colorForName(bet.participants?.name ?? "?")}`}>
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs text-white ${colorForName(bet.participants?.name ?? "?")}`}>
                     {initials(bet.participants?.name ?? "?")}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-slate-950">{bet.participants?.name ?? "-"}</p>
+                    <p className="truncate font-display text-sm text-slate-100">{bet.participants?.name ?? "-"}</p>
                     <p className="text-xs text-slate-500">{bet.participants?.whatsapp ?? "-"}</p>
                   </div>
                 </div>
                 <p className="mt-3 text-xs text-slate-500">{bet.matches?.home_team} x {bet.matches?.away_team}</p>
-                <p className="mt-1 text-2xl font-black text-emerald-700">
-                  {bet.home_score_prediction} <span className="text-slate-400">×</span> {bet.away_score_prediction}
+                <p className="mt-1 font-display text-2xl text-violet-400">
+                  {bet.home_score_prediction} <span className="text-slate-600">×</span> {bet.away_score_prediction}
                 </p>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className={`rounded-full px-2 py-1 text-xs font-bold ${bet.status === "pending" ? "bg-yellow-100 text-yellow-800" : bet.status === "hit" ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
+                  <span className={`rounded-full px-2 py-1 font-display text-xs ${bet.status === "pending" ? "bg-amber-500/10 text-amber-400" : bet.status === "hit" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-700 text-slate-400"}`}>
                     {bet.status === "pending" ? "Aguardando" : bet.status === "hit" ? "Acertou" : "Perdeu"}
                   </span>
-                  {bet.points != null ? <span className="text-xs font-bold text-slate-600">{bet.points} pts</span> : null}
+                  {bet.points != null ? <span className="font-display text-xs text-slate-500">{bet.points} pts</span> : null}
                 </div>
               </div>
             ))}
             {bets.length === 0 ? (
-              <div className="col-span-full rounded-2xl bg-slate-50 p-6 text-center text-slate-500">
+              <div className="col-span-full rounded-xl bg-slate-900/30 p-6 text-center text-slate-500">
                 Nenhum palpite registrado ainda.
               </div>
             ) : null}
@@ -196,7 +213,7 @@ export function AdminBetsDashboard() {
         </div>
       ) : null}
 
-      {message ? <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{message}</p> : null}
+      {message ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{message}</p> : null}
     </section>
   );
 }
