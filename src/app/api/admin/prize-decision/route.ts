@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { requireParticipantSession } from "@/lib/auth";
-import { formatCurrencyFromCents } from "@/lib/format";
+import { formatCurrencyFromCents, normalizeBrazilWhatsapp } from "@/lib/format";
 import { dispatchN8nEvent } from "@/lib/n8n";
 import { applyNoWinnerDecision } from "@/lib/prize";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
@@ -32,7 +32,14 @@ export async function POST(request: NextRequest) {
       supabase.from("betting_groups").select("id,name,admin_whatsapp").eq("id", groupId).single(),
     ]);
 
-    if (!participant || !group || participant.whatsapp !== group.admin_whatsapp) {
+    if (!participant || !group) {
+      return Response.json({ error: "Sem permissão para decidir este grupo." }, { status: 403 });
+    }
+
+    const participantWhatsapp = normalizeBrazilWhatsapp(participant.whatsapp);
+    const groupAdminWhatsapp = normalizeBrazilWhatsapp(group.admin_whatsapp);
+
+    if (participantWhatsapp !== groupAdminWhatsapp) {
       return Response.json({ error: "Sem permissão para decidir este grupo." }, { status: 403 });
     }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createParticipantSession, hashSecret } from "@/lib/auth";
+import { normalizeBrazilWhatsapp } from "@/lib/format";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -28,7 +29,10 @@ export async function POST(request: Request) {
       .eq("id", groupId)
       .single();
 
-    if (!participant || !group || participant.whatsapp !== group.admin_whatsapp) {
+    const participantWhatsapp = participant ? normalizeBrazilWhatsapp(participant.whatsapp) : null;
+    const groupAdminWhatsapp = group ? normalizeBrazilWhatsapp(group.admin_whatsapp) : null;
+
+    if (!participantWhatsapp || !groupAdminWhatsapp || participantWhatsapp !== groupAdminWhatsapp) {
       return Response.json({ error: "Admin inválido para este grupo." }, { status: 403 });
     }
 

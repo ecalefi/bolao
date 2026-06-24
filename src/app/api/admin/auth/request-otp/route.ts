@@ -20,7 +20,9 @@ export async function POST(request: Request) {
       .eq("slug", groupSlug)
       .single();
 
-    if (groupError || !group || group.admin_whatsapp !== whatsapp) {
+    const groupAdminWhatsapp = group ? normalizeBrazilWhatsapp(group.admin_whatsapp) : null;
+
+    if (groupError || !groupAdminWhatsapp || groupAdminWhatsapp !== whatsapp) {
       return Response.json({ error: "Grupo não encontrado ou WhatsApp admin inválido." }, { status: 403 });
     }
 

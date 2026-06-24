@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { requireParticipantSession } from "@/lib/auth";
+import { normalizeBrazilWhatsapp } from "@/lib/format";
 import { buildPrizeSummary } from "@/lib/prize";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -27,7 +28,10 @@ export async function GET(request: NextRequest) {
       .eq("id", groupId)
       .single();
 
-    if (!participant || !group || participant.whatsapp !== group.admin_whatsapp) {
+    const participantWhatsapp = participant ? normalizeBrazilWhatsapp(participant.whatsapp) : null;
+    const groupAdminWhatsapp = group ? normalizeBrazilWhatsapp(group.admin_whatsapp) : null;
+
+    if (!participantWhatsapp || !groupAdminWhatsapp || participantWhatsapp !== groupAdminWhatsapp) {
       return Response.json({ error: "Sem permissão para visualizar este grupo." }, { status: 403 });
     }
 
