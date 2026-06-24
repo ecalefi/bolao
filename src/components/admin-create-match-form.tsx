@@ -14,8 +14,7 @@ const dateInSaoPaulo = () =>
 export function AdminCreateMatchForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [groupSlug, setGroupSlug] = useState("");
-  const [date, setDate] = useState(dateInSaoPaulo());
-  const [matches, setMatches] = useState<AvailableMatch[]>(() => getPredefinedMatchesByDate(dateInSaoPaulo()));
+  const [matches] = useState<AvailableMatch[]>(() => getPredefinedMatchesByDate(dateInSaoPaulo()));
   const [savingFixtureId, setSavingFixtureId] = useState<number | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
 
@@ -28,16 +27,6 @@ export function AdminCreateMatchForm() {
       timeStyle: "short",
       timeZone: "America/Sao_Paulo",
     }).format(new Date(value));
-
-  const loadMatches = (selectedDate = date) => {
-    setMessage(null);
-    const availableMatches = getPredefinedMatchesByDate(selectedDate);
-
-    setMatches(availableMatches);
-    if (availableMatches.length === 0) {
-      setMessage("Nenhum jogo pré-cadastrado para essa data. Tente outra data ou use o cadastro manual.");
-    }
-  };
 
   const selectMatch = async (match: AvailableMatch) => {
     if (!groupSlug.trim()) {
@@ -104,10 +93,6 @@ export function AdminCreateMatchForm() {
   return (
     <div className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Jogos pré-cadastrados</p>
-      <h2 className="mt-2 text-2xl font-black text-slate-950">Selecionar jogo do grupo</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        O jogo pré-cadastrado aparece automaticamente. Informe o slug do grupo e clique em “Usar este jogo”.
-      </p>
 
       <label className="mt-5 block text-sm font-medium text-slate-700">
         Slug do grupo
@@ -120,28 +105,6 @@ export function AdminCreateMatchForm() {
           value={groupSlug}
         />
       </label>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-        <label className="block text-sm font-medium text-slate-700">
-          Data dos jogos
-          <input
-            className={inputClass}
-            onChange={(event) => {
-              setDate(event.target.value);
-              loadMatches(event.target.value);
-            }}
-            type="date"
-            value={date}
-          />
-        </label>
-        <button
-          className="rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-          onClick={() => loadMatches()}
-          type="button"
-        >
-          Recarregar jogos
-        </button>
-      </div>
 
       {matches.length > 0 ? (
         <div className="mt-5 max-h-[32rem] space-y-3 overflow-auto pr-1">
