@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { requireParticipantSession } from "@/lib/auth";
+import { buildPrizeSummary } from "@/lib/prize";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
       .single();
     const { data: group } = await supabase
       .from("betting_groups")
-      .select("id,name,slug,admin_whatsapp")
+      .select("id,name,slug,admin_whatsapp,prize_status,no_winner_decision,rollover_amount_cents,prize_decided_at")
       .eq("id", groupId)
       .single();
 
@@ -38,7 +39,9 @@ export async function GET(request: NextRequest) {
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
 
-    return Response.json({ group, bets: bets ?? [] });
+    const prize = await buildPrizeSummary(supabase, groupId);
+
+    return Response.json({ group, bets: bets ?? [], prize });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro ao carregar palpites.";
     return Response.json({ error: message }, { status: 500 });

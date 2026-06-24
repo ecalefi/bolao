@@ -21,6 +21,21 @@ type BetRow = {
   matches: { home_team: string; away_team: string; starts_at: string } | null;
 };
 
+type PrizeSummary = {
+  totalAmountCents: number;
+  paidParticipantsCount: number;
+  hasFinishedMatch: boolean;
+  hasNoWinner: boolean;
+  winners: Array<{ participantId: string; name: string; whatsapp?: string }>;
+  winnerCount: number;
+  prizePerWinnerCents: number;
+  currentDecision: "rollover" | "refund" | null;
+  prizeStatus: string;
+  rolloverAmountCents: number;
+  prizeDecidedAt: string | null;
+  canDecideNoWinner: boolean;
+};
+
 const safeJson = async (response: Response) => {
   const text = await response.text();
   if (!text) return {};
@@ -59,6 +74,9 @@ const avatarColors = [
 const colorForName = (name: string) =>
   avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-slate-600";
 
+const formatCurrency = (cents: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+
 const getBetStatusView = (status: string, points: number | null) => {
   if (status === "scored") {
     return {
@@ -87,6 +105,7 @@ export function AdminBetsDashboard() {
   const [otpRequest, setOtpRequest] = useState<AdminOtpRequest | null>(null);
   const [auth, setAuth] = useState<AdminAuth | null>(null);
   const [bets, setBets] = useState<BetRow[]>([]);
+  const [prize, setPrize] = useState<PrizeSummary | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -143,6 +162,45 @@ export function AdminBetsDashboard() {
       return;
     }
     setBets((json.bets as BetRow[]) ?? []);
+    setPrize((json.prize as PrizeSummary) ?? null);
+  };
+
+  const decideNoWinner = async (decision: "rollover" | "refund") => {
+    if (!auth?.session?.token) return;
+
+    const confirmed = window.confirm(
+      decision === "rollover"
+        ? "Confirmar que o valor será acumulado para o próximo jogo?"
+        : "Confirmar que todos os participantes deverão ser reembolsados?",
+    );
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    const response = await fetch("/api/admin/prize-decision", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-participant-session": auth.session.token,
+      },
+      body: JSON.stringify({
+        groupId: auth.group.id,
+        adminParticipantId: auth.participant.id,
+        decision,
+      }),
+    });
+    const json = await safeJson(response);
+    setLoading(false);
+
+    if (!response.ok) {
+      setMessage(String(json.error ?? "Não foi possível registrar a decisão."));
+      return;
+    }
+
+    setPrize((json.prize as PrizeSummary) ?? null);
+    setMessage(decision === "rollover" ? "Decisão registrada: valor acumulado." : "Decisão registrada: reembolso para todos.");
   };
 
   const inputClass =
@@ -200,6 +258,67 @@ export function AdminBetsDashboard() {
               Atualizar
             </button>
           </div>
+
+          {prize ? (
+            <div className="mt-5 rounded-xl border border-slate-700 bg-slate-900/40 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-display text-sm uppercase tracking-[0.18em] text-violet-400">Premiação</p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Arrecadado: <strong className="text-slate-100">{formatCurrency(prize.totalAmountCents)}</strong> · Pagos: {prize.paidParticipantsCount}
+                  </p>
+                </div>
+                <span className="rounded-full border border-slate-600 px-3 py-1 text-xs font-bold text-slate-300">
+                  {prize.prizeStatus === "rolled_over"
+                    ? "Acumulado"
+                    : prize.prizeStatus === "refunded"
+                      ? "Reembolso definido"
+                      : prize.hasNoWinner
+                        ? "Sem vencedor"
+                        : prize.winnerCount > 0
+                          ? `${prize.winnerCount} vencedor(es)`
+                          : "Aguardando resultado"}
+                </span>
+              </div>
+
+              {prize.winnerCount > 0 ? (
+                <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+                  Prêmio por vencedor: <strong>{formatCurrency(prize.prizePerWinnerCents)}</strong>. Vencedores: {prize.winners.map((winner) => winner.name).join(", ")}.
+                </div>
+              ) : null}
+
+              {prize.hasNoWinner ? (
+                <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-200">
+                  Nenhum palpite acertou o placar final. O administrador deve decidir se o valor será acumulado ou reembolsado.
+                </div>
+              ) : null}
+
+              {prize.currentDecision ? (
+                <div className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-3 text-sm text-cyan-200">
+                  Decisão registrada: {prize.currentDecision === "rollover" ? `acumular ${formatCurrency(prize.rolloverAmountCents)} para o próximo jogo` : "reembolsar todos os participantes"}.
+                </div>
+              ) : null}
+
+              {prize.canDecideNoWinner ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <button
+                    className="cursor-pointer rounded-full border border-violet-500/40 bg-violet-500/10 px-4 py-3 font-bold text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-60"
+                    disabled={loading}
+                    onClick={() => decideNoWinner("rollover")}
+                  >
+                    Acumular para o próximo jogo
+                  </button>
+                  <button
+                    className="cursor-pointer rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-3 font-bold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-60"
+                    disabled={loading}
+                    onClick={() => decideNoWinner("refund")}
+                  >
+                    Reembolso para todos
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {bets.map((bet) => {

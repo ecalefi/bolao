@@ -7,7 +7,8 @@ type N8nEvent =
   | "participant_joined"
   | "bet_registered"
   | "goal_detected"
-  | "match_finished";
+  | "match_finished"
+  | "no_winner_decision";
 
 export const dispatchN8nEvent = async (event: N8nEvent, payload: Record<string, unknown>) => {
   if (!env.n8nWebhookUrl) {

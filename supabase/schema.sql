@@ -18,6 +18,11 @@ create table public.betting_groups (
   currency text not null default 'BRL',
   bet_lock_minutes_before_match integer not null default 5,
   status text not null default 'active' check (status in ('active', 'closed')),
+  prize_status text not null default 'pending' check (prize_status in ('pending', 'paid', 'no_winner_pending_decision', 'rolled_over', 'refunded')),
+  no_winner_decision text check (no_winner_decision is null or no_winner_decision in ('rollover', 'refund')),
+  rollover_amount_cents integer not null default 0 check (rollover_amount_cents >= 0),
+  prize_decided_at timestamptz,
+  prize_decision_note text,
   rules jsonb not null default '{"exact_score":10,"result":5,"brazil_goals":2,"opponent_goals":2}'::jsonb,
   created_at timestamptz not null default now()
 );
