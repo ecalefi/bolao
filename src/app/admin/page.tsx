@@ -37,7 +37,7 @@ export default function AdminPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-800">Partida</p>
               <h2 className="mt-2 text-2xl font-black">2. Jogo do grupo</h2>
               <p className="mt-2 text-sm leading-6 text-emerald-950/80">
-                Busque os jogos disponíveis por data e escolha qual partida vale para esse grupo.
+                Escolha um dos jogos pré-cadastrados e vincule ao slug do grupo.
               </p>
             </div>
             <AdminCreateMatchForm />
