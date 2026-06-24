@@ -59,6 +59,27 @@ const avatarColors = [
 const colorForName = (name: string) =>
   avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-slate-600";
 
+const getBetStatusView = (status: string, points: number | null) => {
+  if (status === "scored") {
+    return {
+      label: `${points ?? 0} pts`,
+      className: (points ?? 0) > 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-700 text-slate-400",
+    };
+  }
+
+  if (status === "locked") {
+    return {
+      label: "Aguardando resultado",
+      className: "bg-amber-500/10 text-amber-400",
+    };
+  }
+
+  return {
+    label: "Aguardando jogo",
+    className: "bg-violet-500/10 text-violet-300",
+  };
+};
+
 export function AdminBetsDashboard() {
   const [groupSlug, setGroupSlug] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -181,29 +202,32 @@ export function AdminBetsDashboard() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {bets.map((bet) => (
-              <div key={bet.id} className="rounded-xl border border-slate-700 bg-slate-900/30 p-4 transition-colors duration-200 hover:border-violet-500/40">
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs text-white ${colorForName(bet.participants?.name ?? "?")}`}>
-                    {initials(bet.participants?.name ?? "?")}
+            {bets.map((bet) => {
+              const statusView = getBetStatusView(bet.status, bet.points);
+
+              return (
+                <div key={bet.id} className="rounded-xl border border-slate-700 bg-slate-900/30 p-4 transition-colors duration-200 hover:border-violet-500/40">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs text-white ${colorForName(bet.participants?.name ?? "?")}`}>
+                      {initials(bet.participants?.name ?? "?")}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-sm text-slate-100">{bet.participants?.name ?? "-"}</p>
+                      <p className="text-xs text-slate-500">{bet.participants?.whatsapp ?? "-"}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-display text-sm text-slate-100">{bet.participants?.name ?? "-"}</p>
-                    <p className="text-xs text-slate-500">{bet.participants?.whatsapp ?? "-"}</p>
+                  <p className="mt-3 text-xs text-slate-500">{bet.matches?.home_team} x {bet.matches?.away_team}</p>
+                  <p className="mt-1 font-display text-2xl text-violet-400">
+                    {bet.home_score_prediction} <span className="text-slate-600">×</span> {bet.away_score_prediction}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className={`rounded-full px-2 py-1 font-display text-xs ${statusView.className}`}>
+                      {statusView.label}
+                    </span>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-slate-500">{bet.matches?.home_team} x {bet.matches?.away_team}</p>
-                <p className="mt-1 font-display text-2xl text-violet-400">
-                  {bet.home_score_prediction} <span className="text-slate-600">×</span> {bet.away_score_prediction}
-                </p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className={`rounded-full px-2 py-1 font-display text-xs ${bet.status === "pending" ? "bg-amber-500/10 text-amber-400" : bet.status === "hit" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-700 text-slate-400"}`}>
-                    {bet.status === "pending" ? "Aguardando" : bet.status === "hit" ? "Acertou" : "Perdeu"}
-                  </span>
-                  {bet.points != null ? <span className="font-display text-xs text-slate-500">{bet.points} pts</span> : null}
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {bets.length === 0 ? (
               <div className="col-span-full rounded-xl bg-slate-900/30 p-6 text-center text-slate-500">
                 Nenhum palpite registrado ainda.
