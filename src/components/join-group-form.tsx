@@ -53,6 +53,29 @@ const safeReadJson = async (response: Response) => {
   }
 };
 
+function ProgressBar({ step }: { step: 1 | 2 | 3 }) {
+  return (
+    <div className="mb-6 flex items-center gap-2">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex flex-1 items-center gap-2">
+          <div
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black transition ${
+              s <= step
+                ? "bg-emerald-700 text-white"
+                : "bg-slate-100 text-slate-400"
+            }`}
+          >
+            {s < step ? "✓" : s}
+          </div>
+          {s < 3 ? (
+            <div className={`h-1 flex-1 rounded-full transition ${s < step ? "bg-emerald-700" : "bg-slate-100"}`} />
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -64,9 +87,9 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const cardClass = "rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl shadow-black/20 ring-1 ring-white/20";
+  const cardClass = "rounded-3xl bg-white p-6 text-slate-950 shadow-2xl shadow-black/20 ring-1 ring-white/20";
   const inputClass =
-    "mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-950 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:bg-white focus:ring-2";
+    "mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-950 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:bg-white focus:ring-2";
   const primaryButtonClass =
     "mt-6 w-full rounded-full bg-emerald-700 px-6 py-4 font-black text-white shadow-lg shadow-emerald-700/20 transition hover:-translate-y-0.5 hover:bg-emerald-800 disabled:opacity-60";
 
@@ -202,8 +225,8 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   if (payment) {
     return (
       <section className={cardClass}>
-        <p className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-800">Etapa 2 de 3</p>
-        <h2 className="mt-4 text-3xl font-black text-slate-950">Pague o PIX para entrar no jogo</h2>
+        <ProgressBar step={2} />
+        <h2 className="text-3xl font-black text-slate-950">Pague o PIX para entrar no jogo</h2>
         <p className="mt-2 text-slate-600">Valor do bolão: <strong>{formatCurrency(payment.amount_cents)}</strong></p>
         {payment.pix_qr_code_base64 ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -250,18 +273,18 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     if (registration.member?.status === "paid" && sessionToken) {
       return (
           <section className={cardClass}>
-            <p className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-800">Acesso liberado</p>
-            <h2 className="mt-4 text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
+            <ProgressBar step={3} />
+            <h2 className="text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
             <p className="mt-2 text-slate-600">Pagamento já confirmado. Você pode ver ou alterar seus palpites abaixo.</p>
-          <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
-        </section>
+            <BetsPanel groupId={registration.group.id} participantId={registration.participant.id} sessionToken={sessionToken} />
+          </section>
       );
     }
 
     return (
       <section className={cardClass}>
-        <p className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-800">Etapa 2 de 3</p>
-        <h2 className="mt-4 text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
+        <ProgressBar step={2} />
+        <h2 className="text-3xl font-black text-slate-950">Olá, {registration.participant.name}</h2>
         <p className="mt-2 text-slate-600">
           Grupo: {registration.group.name}. Valor do bolão: {formatCurrency(registration.group.pix_amount_cents)}.
         </p>
@@ -280,15 +303,15 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   if (otpRequest) {
     return (
       <form className={cardClass} onSubmit={verifyOtp}>
-        <p className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-800">Etapa 1 de 3</p>
-        <h2 className="mt-4 text-3xl font-black text-slate-950">Confirme seu WhatsApp</h2>
+        <ProgressBar step={1} />
+        <h2 className="text-3xl font-black text-slate-950">Confirme seu WhatsApp</h2>
         <p className="mt-2 text-slate-600">
           Enviamos um código de 6 dígitos para o WhatsApp {otpRequest.participant.whatsapp}.
         </p>
         <label className="mt-6 block text-sm font-medium text-slate-700">
           Código
           <input
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4 text-center text-2xl font-black tracking-[0.35em] text-slate-950 outline-none ring-emerald-500 transition focus:bg-white focus:ring-2"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-center text-2xl font-black tracking-[0.35em] text-slate-950 outline-none ring-emerald-500 transition focus:bg-white focus:ring-2"
             inputMode="numeric"
             maxLength={6}
             required
@@ -321,8 +344,8 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
 
   return (
     <form className={cardClass} onSubmit={requestOtp}>
-      <p className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-emerald-800">Etapa 1 de 3</p>
-      <h2 className="mt-4 text-3xl font-black text-slate-950">Entre no bolão</h2>
+      <ProgressBar step={1} />
+      <h2 className="text-3xl font-black text-slate-950">Entre no bolão</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">Só precisamos do seu nome e WhatsApp para liberar seu acesso com segurança.</p>
       <label className="mt-6 block text-sm font-medium text-slate-700">
         Nome

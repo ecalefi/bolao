@@ -184,7 +184,7 @@ export function BetsPanel({
           const currentBet = betsByMatch[match.id];
 
           return (
-            <article className="rounded-[1.7rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-yellow-50 p-4" key={match.id}>
+            <article className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-yellow-50 p-4" key={match.id}>
               <p className="text-sm font-semibold text-emerald-700">
                 {startsAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
               </p>
@@ -194,7 +194,7 @@ export function BetsPanel({
               <div className="mt-4 flex items-center justify-center gap-3">
                 <input
                   aria-label={`Gols ${match.home_team}`}
-                  className="h-16 w-24 rounded-3xl border border-white bg-white px-3 text-center text-2xl font-black text-slate-950 shadow-sm outline-none ring-emerald-500 focus:ring-2"
+                  className="h-16 w-24 rounded-2xl border border-white bg-white px-3 text-center text-2xl font-black text-slate-950 shadow-sm outline-none ring-emerald-500 focus:ring-2"
                   min={0}
                   max={20}
                   type="number"
@@ -209,7 +209,7 @@ export function BetsPanel({
                 <span className="font-black text-emerald-700">x</span>
                 <input
                   aria-label={`Gols ${match.away_team}`}
-                  className="h-16 w-24 rounded-3xl border border-white bg-white px-3 text-center text-2xl font-black text-slate-950 shadow-sm outline-none ring-emerald-500 focus:ring-2"
+                  className="h-16 w-24 rounded-2xl border border-white bg-white px-3 text-center text-2xl font-black text-slate-950 shadow-sm outline-none ring-emerald-500 focus:ring-2"
                   min={0}
                   max={20}
                   type="number"
@@ -235,7 +235,7 @@ export function BetsPanel({
         })}
       </div>
 
-      <div className="mt-6 rounded-[1.7rem] bg-white p-4 ring-1 ring-emerald-100">
+      <div className="mt-6 rounded-3xl bg-white p-4 ring-1 ring-emerald-100">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Palpites do grupo</p>
@@ -250,14 +250,27 @@ export function BetsPanel({
           <div className="mt-4 space-y-2">
             {allBets.map((bet) => {
               const match = matches.find((item) => item.id === bet.match_id);
+              const isMine = bet.participant_id === participantId;
 
               return (
-                <div className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3" key={bet.id}>
-                  <div>
-                    <p className="font-bold text-slate-950">{bet.participant_name ?? "Participante"}</p>
-                    <p className="text-xs text-slate-500">{match ? `${match.home_team} x ${match.away_team}` : "Jogo do grupo"}</p>
+                <div
+                  className={`flex items-center justify-between gap-3 rounded-2xl p-3 ring-1 transition ${
+                    isMine
+                      ? "bg-emerald-100 ring-emerald-300"
+                      : "bg-slate-50 ring-transparent"
+                  }`}
+                  key={bet.id}
+                >
+                  <div className="flex items-center gap-2">
+                    {isMine ? (
+                      <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs font-bold text-white">Você</span>
+                    ) : null}
+                    <div>
+                      <p className={`font-bold ${isMine ? "text-emerald-800" : "text-slate-950"}`}>{bet.participant_name ?? "Participante"}</p>
+                      <p className="text-xs text-slate-500">{match ? `${match.home_team} x ${match.away_team}` : "Jogo do grupo"}</p>
+                    </div>
                   </div>
-                  <div className="rounded-2xl bg-white px-4 py-2 text-lg font-black text-emerald-800 shadow-sm">
+                  <div className={`rounded-2xl px-4 py-2 text-lg font-black shadow-sm ${isMine ? "bg-emerald-700 text-white" : "bg-white text-emerald-800"}`}>
                     {bet.home_score_prediction} x {bet.away_score_prediction}
                   </div>
                 </div>
