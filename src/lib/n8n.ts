@@ -6,6 +6,7 @@ type N8nEvent =
   | "payment_confirmed"
   | "participant_joined"
   | "bet_registered"
+  | "group_bets_updated"
   | "goal_detected"
   | "match_finished"
   | "no_winner_decision";

@@ -1,4 +1,5 @@
 import { getSessionTokenFromRequest, requireParticipantSession } from "@/lib/auth";
+import { buildGroupParticipantBetsSummary } from "@/lib/group-summary";
 import { dispatchN8nEvent } from "@/lib/n8n";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 import { upsertBetSchema } from "@/lib/validation";
@@ -95,6 +96,30 @@ export async function POST(request: Request) {
       match: `${match.home_team} x ${match.away_team}`,
       prediction: `${homeScorePrediction} x ${awayScorePrediction}`,
     }).catch(() => undefined);
+
+    const summary = await buildGroupParticipantBetsSummary(supabase, groupId);
+    const updatedBy = participant?.name ?? "Participante";
+    const updatedPrediction = `${homeScorePrediction} x ${awayScorePrediction}`;
+    const updatedMatch = `${match.home_team} x ${match.away_team}`;
+
+    await Promise.all(
+      summary.participants
+        .filter((recipient) => recipient.whatsapp)
+        .map((recipient) =>
+          dispatchN8nEvent("group_bets_updated", {
+            groupId,
+            groupName: group.name,
+            phone: recipient.whatsapp,
+            recipientName: recipient.name,
+            updatedBy,
+            match: updatedMatch,
+            prediction: updatedPrediction,
+            participantCount: summary.participantCount,
+            participants: summary.participants,
+            summaryText: summary.summaryText,
+          }).catch(() => undefined),
+        ),
+    );
 
     return Response.json({ bet });
   } catch (error) {
