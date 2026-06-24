@@ -58,7 +58,45 @@ export async function GET(request: NextRequest) {
           .eq("participant_id", participantId)
       : { data: [] };
 
-    return Response.json({ matches, bets: bets ?? [] });
+    const { data: allBets, error: allBetsError } = await supabase
+      .from("bets")
+      .select("id,match_id,participant_id,home_score_prediction,away_score_prediction,status,points,updated_at,participants(name)")
+      .eq("group_id", groupId)
+      .order("updated_at", { ascending: false });
+
+    if (allBetsError) {
+      return Response.json({ error: allBetsError.message }, { status: 500 });
+    }
+
+    const typedAllBets = (allBets ?? []) as unknown as Array<{
+      id: string;
+      match_id: string;
+      participant_id: string;
+      home_score_prediction: number;
+      away_score_prediction: number;
+      status: string;
+      points: number | null;
+      updated_at: string;
+      participants: { name: string } | { name: string }[] | null;
+    }>;
+
+    const publicBets = typedAllBets.map((bet) => {
+      const participant = Array.isArray(bet.participants) ? bet.participants[0] : bet.participants;
+
+      return {
+        id: bet.id,
+        match_id: bet.match_id,
+        participant_id: bet.participant_id,
+        participant_name: participant?.name ?? "Participante",
+        home_score_prediction: bet.home_score_prediction,
+        away_score_prediction: bet.away_score_prediction,
+        status: bet.status,
+        points: bet.points,
+        updated_at: bet.updated_at,
+      };
+    });
+
+    return Response.json({ matches, bets: bets ?? [], allBets: publicBets });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro ao carregar jogos.";
 

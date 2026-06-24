@@ -18,6 +18,7 @@ export const createGroupSchema = z.object({
   slug: z.string().trim().min(3).regex(/^[a-z0-9-]+$/),
   adminWhatsapp: whatsappSchema,
   pixAmountCents: z.coerce.number().int().positive(),
+  apiFootballFixtureId: z.coerce.number().int(),
 });
 
 export const createPaymentSchema = z.object({

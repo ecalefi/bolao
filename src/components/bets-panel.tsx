@@ -13,15 +13,19 @@ type Match = {
 type Bet = {
   id: string;
   match_id: string;
+  participant_id?: string;
+  participant_name?: string;
   home_score_prediction: number;
   away_score_prediction: number;
   status: string;
   points: number | null;
+  updated_at?: string;
 };
 
 type MatchPayload = {
   matches: Match[];
   bets: Bet[];
+  allBets?: Bet[];
   error?: string;
 };
 
@@ -65,6 +69,7 @@ export function BetsPanel({
 }) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [bets, setBets] = useState<Bet[]>([]);
+  const [allBets, setAllBets] = useState<Bet[]>([]);
   const [predictions, setPredictions] = useState<Record<string, { home: string; away: string }>>({});
   const [loading, setLoading] = useState(true);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
@@ -92,6 +97,7 @@ export function BetsPanel({
 
         setMatches(json.matches ?? []);
         setBets(json.bets ?? []);
+        setAllBets(json.allBets ?? []);
         setPredictions(
           Object.fromEntries(
             (json.matches ?? []).map((match) => {
@@ -151,6 +157,15 @@ export function BetsPanel({
     }
 
     setBets((current) => [...current.filter((bet) => bet.match_id !== match.id), json.bet as Bet]);
+    setAllBets((current) => [
+      {
+        ...(json.bet as Bet),
+        participant_id: participantId,
+        participant_name: "Você",
+        updated_at: new Date().toISOString(),
+      },
+      ...current.filter((bet) => bet.id !== json.bet?.id),
+    ]);
     setMessage("Palpite salvo com sucesso!");
   };
 
@@ -218,6 +233,42 @@ export function BetsPanel({
             </article>
           );
         })}
+      </div>
+
+      <div className="mt-6 rounded-[1.7rem] bg-white p-4 ring-1 ring-emerald-100">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Palpites do grupo</p>
+            <h3 className="mt-1 text-lg font-black text-slate-950">Veja como a galera apostou</h3>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+            {allBets.length} {allBets.length === 1 ? "palpite" : "palpites"}
+          </span>
+        </div>
+
+        {allBets.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {allBets.map((bet) => {
+              const match = matches.find((item) => item.id === bet.match_id);
+
+              return (
+                <div className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3" key={bet.id}>
+                  <div>
+                    <p className="font-bold text-slate-950">{bet.participant_name ?? "Participante"}</p>
+                    <p className="text-xs text-slate-500">{match ? `${match.home_team} x ${match.away_team}` : "Jogo do grupo"}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-4 py-2 text-lg font-black text-emerald-800 shadow-sm">
+                    {bet.home_score_prediction} x {bet.away_score_prediction}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+            Seja o primeiro a registrar um palpite neste grupo.
+          </p>
+        )}
       </div>
 
       {message ? <p className="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-900">{message}</p> : null}

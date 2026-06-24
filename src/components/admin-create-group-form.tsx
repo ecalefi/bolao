@@ -1,10 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { getPredefinedMatchesByDate } from "@/lib/predefined-matches";
+
+const todayMatches = getPredefinedMatchesByDate("2026-06-24");
 
 export function AdminCreateGroupForm() {
   const [result, setResult] = useState<{ slug: string; invite_token: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFixtureId, setSelectedFixtureId] = useState(todayMatches[0]?.fixtureId ?? 0);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -18,6 +22,7 @@ export function AdminCreateGroupForm() {
         slug: form.get("slug"),
         adminWhatsapp: form.get("adminWhatsapp"),
         pixAmountCents: Math.round(Number(form.get("pixAmount")) * 100),
+        apiFootballFixtureId: selectedFixtureId,
       }),
     });
     const json = await response.json();
@@ -65,8 +70,36 @@ export function AdminCreateGroupForm() {
         <input className={inputClass} name="pixAmount" placeholder="Ex.: 20" required type="number" step="0.01" />
       </label>
 
+      <div className="mt-5 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+        <p className="text-sm font-bold text-emerald-950">Jogo do grupo</p>
+        <div className="mt-3 space-y-3">
+          {todayMatches.map((match) => (
+            <label
+              className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-white p-4 text-sm ring-1 ring-emerald-100 transition hover:ring-emerald-300"
+              key={match.fixtureId}
+            >
+              <span>
+                <strong className="block text-base text-slate-950">
+                  {match.homeTeam.name} x {match.awayTeam.name}
+                </strong>
+                <span className="text-slate-600">
+                  {new Date(match.startsAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                </span>
+              </span>
+              <input
+                checked={selectedFixtureId === match.fixtureId}
+                name="apiFootballFixtureId"
+                onChange={() => setSelectedFixtureId(match.fixtureId)}
+                type="radio"
+                value={match.fixtureId}
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
       <button className="mt-6 w-full rounded-full bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700">
-        Criar grupo
+        Criar grupo com jogo selecionado
       </button>
       {error ? <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {result ? (
