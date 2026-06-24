@@ -1,4 +1,5 @@
 import { getPayment, mapMercadoPagoStatus } from "@/lib/mercadopago";
+import { buildGroupParticipantBetsSummary } from "@/lib/group-summary";
 import { dispatchN8nEvent } from "@/lib/n8n";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -35,6 +36,15 @@ export const refreshPaymentStatus = async (paymentId: string) => {
     return updatedPayment;
   }
 
+  const { data: existingMember } = await supabase
+    .from("group_members")
+    .select("status")
+    .eq("group_id", payment.group_id)
+    .eq("participant_id", payment.participant_id)
+    .maybeSingle();
+
+  const wasAlreadyPaid = existingMember?.status === "paid";
+
   await supabase
     .from("group_members")
     .update({ status: "paid", paid_at: new Date().toISOString() })
@@ -53,14 +63,30 @@ export const refreshPaymentStatus = async (paymentId: string) => {
     participants: { name: string; whatsapp: string } | null;
   } | null;
 
-  await dispatchN8nEvent("payment_confirmed", {
-    groupId: payment.group_id,
-    participantId: payment.participant_id,
-    amountCents: payment.amount_cents,
-    groupName: typedContext?.betting_groups?.name,
-    userName: typedContext?.participants?.name,
-    phone: typedContext?.participants?.whatsapp,
-  }).catch(() => undefined);
+  if (!wasAlreadyPaid) {
+    await dispatchN8nEvent("payment_confirmed", {
+      groupId: payment.group_id,
+      participantId: payment.participant_id,
+      amountCents: payment.amount_cents,
+      groupName: typedContext?.betting_groups?.name,
+      userName: typedContext?.participants?.name,
+      phone: typedContext?.participants?.whatsapp,
+    }).catch(() => undefined);
+
+    const summary = await buildGroupParticipantBetsSummary(supabase, payment.group_id);
+
+    await dispatchN8nEvent("participant_joined", {
+      groupId: payment.group_id,
+      participantId: payment.participant_id,
+      groupName: typedContext?.betting_groups?.name,
+      userName: typedContext?.participants?.name,
+      phone: typedContext?.participants?.whatsapp,
+      participantCount: summary.participantCount,
+      matches: summary.matches,
+      participants: summary.participants,
+      summaryText: summary.summaryText,
+    }).catch(() => undefined);
+  }
 
   return updatedPayment;
 };

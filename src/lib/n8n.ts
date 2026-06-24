@@ -4,6 +4,7 @@ type N8nEvent =
   | "group_created"
   | "otp_requested"
   | "payment_confirmed"
+  | "participant_joined"
   | "bet_registered"
   | "goal_detected"
   | "match_finished";

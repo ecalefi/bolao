@@ -83,6 +83,7 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [payment, setPayment] = useState<PaymentResult["payment"] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pixCopied, setPixCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const cardClass = "rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-slate-100 shadow-2xl shadow-violet-900/20 backdrop-blur-sm";
@@ -179,6 +180,22 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
     }
 
     setPayment(json.payment);
+    setPixCopied(false);
+  };
+
+  const copyPixCode = async () => {
+    if (!payment?.pix_qr_code) return;
+
+    setError(null);
+
+    try {
+      await navigator.clipboard.writeText(payment.pix_qr_code);
+      setPixCopied(true);
+
+      window.setTimeout(() => setPixCopied(false), 2500);
+    } catch {
+      setError("Não foi possível copiar automaticamente. Selecione o código PIX e copie manualmente.");
+    }
   };
 
   const refreshPayment = useCallback(async () => {
@@ -237,11 +254,25 @@ export function JoinGroupForm({ inviteToken }: { inviteToken: string }) {
           />
         ) : null}
         {payment.pix_qr_code ? (
-          <textarea
-            readOnly
-            className="mt-5 h-28 w-full rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400"
-            value={payment.pix_qr_code}
-          />
+          <div className="mt-5 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-slate-300">PIX copia e cola</p>
+              <button
+                className="shrink-0 rounded-full border border-violet-500/40 bg-violet-500/10 px-4 py-2 text-xs font-bold text-violet-200 transition hover:border-violet-400 hover:bg-violet-500/20 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                type="button"
+                onClick={copyPixCode}
+              >
+                {pixCopied ? "Copiado!" : "Copiar código"}
+              </button>
+            </div>
+            <textarea
+              readOnly
+              className="h-28 w-full rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500"
+              value={payment.pix_qr_code}
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <p className="text-xs text-slate-500">Use o botão para copiar ou toque no campo para selecionar o código completo.</p>
+          </div>
         ) : null}
         <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-4 text-sm leading-6 text-violet-300">
           Estamos verificando automaticamente o Mercado Pago a cada 5 segundos. Quando confirmar, seus palpites serão liberados.
