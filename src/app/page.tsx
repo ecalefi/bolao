@@ -58,8 +58,8 @@ export default function Home() {
         <div className="relative mx-auto w-full max-w-sm">
           <div className="rounded-2xl border border-line bg-surface p-1 shadow-sm">
             <div className="rounded-xl bg-surface-alt p-5">
-              <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-accent">Copa do Mundo 2026 · Grupo F</p>
-              <div className="mt-5 flex items-center justify-center gap-4">
+              <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-accent">COPA DO MUNDO 2026 · GRUPO F</p>
+              <div className="mt-5 flex items-center justify-center gap-6">
                 {/* Home team */}
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
@@ -70,24 +70,22 @@ export default function Home() {
                   </div>
                   <span className="font-display text-sm font-bold text-fg">Brasil</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="tabular-nums font-display text-4xl font-extrabold text-accent">2</span>
-                  <span className="font-display text-xl font-bold text-line">×</span>
-                  <span className="tabular-nums font-display text-4xl font-extrabold text-fg">1</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-2xl font-bold text-line">×</span>
                 </div>
                 {/* Away team */}
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/10">
-                    <svg className="h-8 w-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/15">
+                    <svg className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" />
-                      <path strokeLinecap="round" d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                   </div>
-                  <span className="font-display text-sm font-bold text-muted">Argentina</span>
+                  <span className="font-display text-sm font-bold text-fg">Japão</span>
                 </div>
               </div>
-              <p className="mt-4 text-center font-mono text-xs font-medium uppercase tracking-wider text-muted">
-                Maracanã · Rio de Janeiro · 21h
+              <p className="mt-4 text-center font-mono text-xs font-medium uppercase tracking-wider text-accent/70">
+                Domingo · 29 jun · 14h
               </p>
             </div>
           </div>
