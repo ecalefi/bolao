@@ -1,0 +1,31 @@
+{
+  "kind": "critique-panel",
+  "score": 4.4,
+  "axe": "redesign-react",
+  "axes": {
+    "philosophy": {
+      "score": 5,
+      "notes": "Clean/esportivo fiel ao brief Premier League/ESPN. Verde Brasil vibrante + ouro em fundo claro, sem neon, sem cyberpunk. Direção consistente em todas as 9 páginas/componentes refatorados."
+    },
+    "hierarchy": {
+      "score": 4,
+      "notes": "CTAs verdes bem destacados, separação entre conteúdo primário e secundário, steps 1-2-3 nos formulários de entrada, scoreboard na landing."
+    },
+    "typography": {
+      "score": 4,
+      "notes": "Sora (display bold 700-800) + Inter (body 400-500). Tabular-nums nos palpites. Display e body em famílias diferentes conforme brand-spec."
+    },
+    "execution": {
+      "score": 5,
+      "notes": "Build compila 0 erros. Todos os 9 arquivos refatorados com tokens consistentes. 0 resquícios do tema antigo. Score-input utility class, pills, timing, dark mode reduced-motion preservados."
+    },
+    "specificity": {
+      "score": 5,
+      "notes": "Cada arquivo refatorado individualmente. Lógica de negócio e fluxos preservados (OTP, PIX, Bets, Admin auth). Zero placeholder copy."
+    },
+    "restraint": {
+      "score": 4,
+      "notes": "Acento verde usado ≤2× por tela. Gold apenas no valor do PIX. Cards limpos sem gradientes, sem glow, sem scanlines."
+    }
+  }
+}

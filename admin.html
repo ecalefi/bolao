@@ -1,0 +1,647 @@
+<!doctype html>
+<!--
+  Bolão Copa Brasil — admin dashboard prototype
+  Group management, match creation, bets overview, prize decision
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · Bolão Copa Brasil</title>
+  <style>
+    :root {
+      --bg:      oklch(98% 0.003 140);
+      --surface: oklch(100% 0 0);
+      --fg:      oklch(15% 0.02 150);
+      --muted:   oklch(45% 0.025 150);
+      --border:  oklch(88% 0.008 140);
+      --accent:  oklch(52% 0.17 145);
+      --gold:    oklch(78% 0.13 85);
+      --red:     oklch(50% 0.18 30);
+      --green:   oklch(55% 0.16 145);
+
+      --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+      --gold-soft:   color-mix(in oklch, var(--gold) 14%, transparent);
+      --red-soft:    color-mix(in oklch, var(--red) 12%, transparent);
+      --green-soft:  color-mix(in oklch, var(--green) 14%, transparent);
+      --fg-soft:     color-mix(in oklch, var(--fg) 6%, transparent);
+
+      --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono:    ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+      --fs-h2: clamp(28px, 3.5vw, 40px);
+      --fs-h3: 20px;
+      --fs-body: 15px;
+      --fs-meta: 13px;
+
+      --gap-xs: 8px;
+      --gap-sm: 12px;
+      --gap-md: 20px;
+      --gap-lg: 32px;
+      --gap-xl: 56px;
+      --container: 1120px;
+      --gutter: 32px;
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    p { text-wrap: pretty; }
+    h1, h2, h3, h4 { text-wrap: balance; }
+
+    .container { max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+    .section { padding-block: clamp(32px, 5vw, var(--gap-xl)); }
+    .section + .section { border-top: 1px solid var(--border); }
+    .stack { display: flex; flex-direction: column; }
+    .stack > * + * { margin-top: var(--gap-md); }
+    .row { display: flex; align-items: center; gap: var(--gap-md); flex-wrap: wrap; }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-md); flex-wrap: wrap; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap-lg); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-lg); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-md); }
+    @media (max-width: 920px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+    h2 { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; line-height: 1.1; letter-spacing: -0.015em; margin: 0; }
+    h3 { font-size: var(--fs-h3); font-weight: 600; line-height: 1.3; margin: 0; }
+    .lead { font-size: 17px; line-height: 1.5; color: var(--muted); max-width: 60ch; margin: 0; }
+    .eyebrow {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent); margin: 0 0 var(--gap-sm);
+    }
+    .meta { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--muted); }
+    .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* ─── topnav ────────────────────────────────────────────────────── */
+    .topnav {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in oklch, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topnav-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; }
+    .topnav .logo {
+      font-family: var(--font-display); font-size: 18px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .topnav .logo svg { width: 20px; height: 20px; }
+    .topnav nav { display: flex; gap: var(--gap-lg); }
+    .topnav nav a { font-size: 14px; color: var(--muted); transition: color 0.15s; }
+    .topnav nav a:hover { color: var(--fg); }
+    .topnav .admin-badge {
+      background: var(--accent-soft); color: var(--accent);
+      padding: 3px 10px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 11px;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    /* ─── buttons ───────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: var(--radius);
+      border: 1px solid transparent;
+      font-size: 14px; font-weight: 600;
+      transition: transform 0.05s, background 0.15s, border-color 0.15s;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+    .btn-primary:hover { background: color-mix(in oklch, var(--accent) 88%, black); }
+    .btn-secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+    .btn-secondary:hover { border-color: var(--fg); }
+    .btn-danger { background: var(--red); color: white; border-color: var(--red); }
+    .btn-danger:hover { background: color-mix(in oklch, var(--red) 88%, black); }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+    .btn-ghost { background: transparent; color: var(--fg); border-color: transparent; padding-inline: 8px; }
+    .btn-ghost:hover { color: var(--accent); }
+
+    /* ─── card ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    /* ─── stat card ─────────────────────────────────────────────────── */
+    .stat-card { text-align: center; padding: 20px; }
+    .stat-card .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .stat-card .stat-value.green { color: var(--accent); }
+    .stat-card .stat-value.gold { color: var(--gold); }
+    .stat-card .stat-label { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+    /* ─── table ─────────────────────────────────────────────────────── */
+    .ds-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ds-table th, .ds-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    .ds-table th { color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .ds-table tbody tr:hover { background: var(--fg-soft); }
+    .ds-table .num-col { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+    /* ─── form ──────────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .input, .select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--fg);
+      font: inherit;
+      font-size: 14px;
+    }
+    .input:focus, .select:focus {
+      outline: 2px solid var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6964' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+    /* ─── pill / badge ──────────────────────────────────────────────── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pill-green { background: var(--green-soft); color: var(--green); }
+    .pill-red { background: var(--red-soft); color: var(--red); }
+    .pill-muted { background: var(--fg-soft); color: var(--muted); }
+    .pill-accent { background: var(--accent-soft); color: var(--accent); }
+    .pill-gold { background: var(--gold-soft); color: color-mix(in oklch, var(--gold) 40%, var(--fg)); font-weight: 600; }
+
+    /* ─── tabs ──────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: var(--gap-lg);
+    }
+    .tabs button {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tabs button:hover { color: var(--fg); }
+    .tabs button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ─── OTP input ─────────────────────────────────────────────────── */
+    .otp-row { display: flex; gap: 8px; justify-content: center; }
+    .otp-input {
+      width: 44px; height: 52px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--fg);
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .otp-input:focus {
+      outline: 2px solid var(--accent-soft);
+      border-color: var(--accent);
+    }
+
+    /* ─── pagefoot ──────────────────────────────────────────────────── */
+    .pagefoot { padding-block: var(--gap-lg); color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+    /* ─── responsive ────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .tabs { overflow-x: auto; }
+      .tabs button { white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ═══ topnav ═══ -->
+  <header class="topnav">
+    <div class="container topnav-inner">
+      <a href="index.html" class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+        Bolão Copa Brasil
+      </a>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="bolao.html">Grupo</a>
+        <span class="admin-badge">Admin</span>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content">
+
+    <!-- ═══ Admin header ═══ -->
+    <section class="section" data-od-id="admin-header">
+      <div class="container">
+        <div class="row-between">
+          <div>
+            <p class="eyebrow">PAINEL ADMINISTRATIVO</p>
+            <h2>Dashboard do Bolão</h2>
+          </div>
+          <div class="row" style="gap:var(--gap-sm);">
+            <span class="pill pill-accent">🔐 Admin</span>
+            <button class="btn btn-secondary btn-sm">Sair</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Stats overview ═══ -->
+    <section class="section" style="padding-top:0;" data-od-id="stats">
+      <div class="container">
+        <div class="grid-4">
+          <div class="card stat-card">
+            <div class="stat-value green num">12</div>
+            <div class="stat-label">Grupos ativos</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-value green num">48</div>
+            <div class="stat-label">Participantes</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-value gold num">R$ 960</div>
+            <div class="stat-label">Total em prêmios</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-value green num">84</div>
+            <div class="stat-label">Palpites registrados</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Tabs: Grupos | Jogos | Palpites | Prêmio ═══ -->
+    <section class="section" style="padding-top:0;" data-od-id="admin-content">
+      <div class="container">
+        <div class="tabs">
+          <button class="active">Grupos</button>
+          <button>Jogos</button>
+          <button>Palpites</button>
+          <button>Prêmio</button>
+        </div>
+
+        <!-- ── Tab: Grupos ── -->
+        <div class="stack" style="gap:var(--gap-lg);">
+          <div class="card">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Criar novo grupo</h3>
+            </div>
+            <div class="grid-2" style="align-items:end;">
+              <div class="field">
+                <label>Nome do grupo</label>
+                <input class="input" placeholder="Ex: Amigos do Bolão" />
+              </div>
+              <div class="field">
+                <label>Valor de entrada (R$)</label>
+                <input class="input num" type="number" placeholder="20" min="0" />
+              </div>
+              <div class="field">
+                <label>Máx. participantes</label>
+                <input class="input num" type="number" placeholder="30" min="2" />
+              </div>
+              <button class="btn btn-primary" style="align-self:end;">Criar grupo</button>
+            </div>
+          </div>
+
+          <div class="card" style="overflow-x:auto;">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Grupos existentes</h3>
+              <span class="meta">12 grupos</span>
+            </div>
+            <table class="ds-table">
+              <thead>
+                <tr>
+                  <th>Grupo</th>
+                  <th>Criador</th>
+                  <th class="num-col">Participantes</th>
+                  <th class="num-col">Entrada</th>
+                  <th class="num-col">Prêmio</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Amigos do Bolão</strong></td>
+                  <td>Carlos</td>
+                  <td class="num-col">12</td>
+                  <td class="num-col">R$ 20</td>
+                  <td class="num-col">R$ 240</td>
+                  <td><span class="pill pill-green">Ativo</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Família Silva</strong></td>
+                  <td>Ana</td>
+                  <td class="num-col">8</td>
+                  <td class="num-col">R$ 50</td>
+                  <td class="num-col">R$ 400</td>
+                  <td><span class="pill pill-green">Ativo</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Escritório FC</strong></td>
+                  <td>Rafael</td>
+                  <td class="num-col">15</td>
+                  <td class="num-col">R$ 10</td>
+                  <td class="num-col">R$ 150</td>
+                  <td><span class="pill pill-green">Ativo</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Veteranos 2026</strong></td>
+                  <td>Pedro</td>
+                  <td class="num-col">6</td>
+                  <td class="num-col">R$ 30</td>
+                  <td class="num-col">R$ 180</td>
+                  <td><span class="pill pill-muted">Aguardando</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Tab: Jogos (hidden by default, shown via JS) ── -->
+        <div class="stack" style="gap:var(--gap-lg);display:none;" data-tab="jogos">
+          <div class="card">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Adicionar jogo do Brasil</h3>
+            </div>
+            <div class="grid-2" style="align-items:end;">
+              <div class="field">
+                <label>Adversário</label>
+                <input class="input" placeholder="Ex: Suíça" />
+              </div>
+              <div class="field">
+                <label>Fase</label>
+                <select class="select">
+                  <option>Fase de Grupos</option>
+                  <option>Oitavas</option>
+                  <option>Quartas</option>
+                  <option>Semi</option>
+                  <option>Final</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Data e horário</label>
+                <input class="input" type="datetime-local" />
+              </div>
+              <button class="btn btn-primary" style="align-self:end;">Adicionar jogo</button>
+            </div>
+          </div>
+
+          <div class="card" style="overflow-x:auto;">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Jogos cadastrados</h3>
+              <span class="meta">7 jogos</span>
+            </div>
+            <table class="ds-table">
+              <thead>
+                <tr>
+                  <th>Jogo</th>
+                  <th>Fase</th>
+                  <th>Data</th>
+                  <th class="num-col">Palpites</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Brasil × Suíça</strong></td>
+                  <td>Grupos</td>
+                  <td>20 jun, 16:00</td>
+                  <td class="num-col">32</td>
+                  <td><span class="pill pill-accent">Aberto</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Brasil × Camarões</strong></td>
+                  <td>Grupos</td>
+                  <td>25 jun, 13:00</td>
+                  <td class="num-col">28</td>
+                  <td><span class="pill pill-accent">Aberto</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Brasil × Portugal</strong></td>
+                  <td>Oitavas</td>
+                  <td>30 jun, 16:00</td>
+                  <td class="num-col">24</td>
+                  <td><span class="pill pill-accent">Aberto</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Editar</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Brasil × Sérvia</strong></td>
+                  <td>Grupos</td>
+                  <td>15 jun, 21:00</td>
+                  <td class="num-col">40</td>
+                  <td><span class="pill pill-green">Encerrado</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Ver resultado</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Tab: Palpites (hidden) ── -->
+        <div class="stack" style="gap:var(--gap-lg);display:none;" data-tab="palpites">
+          <div class="card" style="overflow-x:auto;">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Palpites · Brasil × Suíça</h3>
+              <select class="select" style="width:auto;">
+                <option>Brasil × Suíça</option>
+                <option>Brasil × Camarões</option>
+                <option>Brasil × Portugal</option>
+              </select>
+            </div>
+            <table class="ds-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Participante</th>
+                  <th>Grupo</th>
+                  <th class="num-col">Palpite</th>
+                  <th class="num-col">Resultado</th>
+                  <th class="num-col">Pontos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Rafael</td>
+                  <td>Amigos do Bolão</td>
+                  <td class="num-col" style="font-weight:600;">3 × 1</td>
+                  <td class="num-col">2 × 1</td>
+                  <td class="num-col"><span class="pill pill-accent">5 pts</span></td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Juliana</td>
+                  <td>Amigos do Bolão</td>
+                  <td class="num-col" style="font-weight:600;">2 × 0</td>
+                  <td class="num-col">2 × 1</td>
+                  <td class="num-col"><span class="pill pill-accent">5 pts</span></td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Carlos</td>
+                  <td>Amigos do Bolão</td>
+                  <td class="num-col" style="font-weight:600;">2 × 1</td>
+                  <td class="num-col">2 × 1</td>
+                  <td class="num-col"><span class="pill pill-gold">10 pts</span></td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>Ana</td>
+                  <td>Família Silva</td>
+                  <td class="num-col" style="font-weight:600;">1 × 0</td>
+                  <td class="num-col">2 × 1</td>
+                  <td class="num-col"><span class="pill pill-muted">0 pts</span></td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>Pedro</td>
+                  <td>Escritório FC</td>
+                  <td class="num-col" style="font-weight:600;">3 × 2</td>
+                  <td class="num-col">2 × 1</td>
+                  <td class="num-col"><span class="pill pill-muted">0 pts</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Tab: Prêmio (hidden) ── -->
+        <div class="stack" style="gap:var(--gap-lg);display:none;" data-tab="premio">
+          <div class="card">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Decisão do prêmio</h3>
+              <span class="pill pill-gold">💰 R$ 960 total</span>
+            </div>
+            <p class="lead" style="margin-bottom:20px;">Defina o que acontece com o prêmio acumulado quando a Copa terminar.</p>
+            <div class="grid-2">
+              <div class="card" style="border:2px solid var(--accent);cursor:pointer;">
+                <p class="eyebrow" style="color:var(--accent);">✓ RECOMENDADO</p>
+                <h3 style="margin-bottom:8px;">Distribuir por ranking</h3>
+                <p style="color:var(--muted);font-size:14px;margin:0;">1º: 50% · 2º: 30% · 3º: 20%</p>
+                <p style="color:var(--muted);font-size:13px;margin-top:8px;">Distribuição proporcional aos primeiros colocados de cada grupo.</p>
+              </div>
+              <div class="card" style="cursor:pointer;">
+                <h3 style="margin-bottom:8px;">Reembolso total</h3>
+                <p style="color:var(--muted);font-size:14px;margin:0;">Cada participante recebe de volta o valor pago.</p>
+                <p style="color:var(--muted);font-size:13px;margin-top:8px;">Ideal se o bolão não teve movimentação suficiente.</p>
+              </div>
+            </div>
+            <div style="margin-top:20px;">
+              <button class="btn btn-primary">Confirmar decisão</button>
+            </div>
+          </div>
+
+          <div class="card" style="overflow-x:auto;">
+            <div class="row-between" style="margin-bottom:16px;">
+              <h3>Histórico de grupos</h3>
+            </div>
+            <table class="ds-table">
+              <thead>
+                <tr>
+                  <th>Grupo</th>
+                  <th class="num-col">Prêmio</th>
+                  <th>Decisão</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Amigos do Bolão</strong></td>
+                  <td class="num-col">R$ 240</td>
+                  <td>Ranking (50/30/20)</td>
+                  <td><span class="pill pill-green">Pago</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Família Silva</strong></td>
+                  <td class="num-col">R$ 400</td>
+                  <td>—</td>
+                  <td><span class="pill pill-accent">Pendente</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="pagefoot">
+    <div class="container row-between">
+      <span>© Bolão Copa Brasil · 2026</span>
+      <span class="meta">admin · bolao.conectai.online</span>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Tab switching ──────────────────────────────────────────────
+    const tabButtons = document.querySelectorAll('.tabs button');
+    const tabLabels = ['grupos', 'jogos', 'palpites', 'premio'];
+    const tabContainers = document.querySelectorAll('[data-tab]');
+
+    // The first tab (Grupos) is always visible by default
+    // Hide all data-tab containers initially except grupos
+    tabContainers.forEach(el => el.style.display = 'none');
+    // Show grupos tab content (the first non-data-tab content block)
+    document.querySelector('.tabs + .stack').style.display = '';
+
+    tabButtons.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Hide all tab containers
+        document.querySelectorAll('.tabs + .stack, [data-tab]').forEach(el => {
+          el.style.display = 'none';
+        });
+
+        if (i === 0) {
+          // Grupos — the default visible stack
+          document.querySelector('.tabs + .stack').style.display = '';
+        } else {
+          const target = document.querySelector(`[data-tab="${tabLabels[i]}"]`);
+          if (target) target.style.display = '';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

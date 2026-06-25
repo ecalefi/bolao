@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "bolao.html",
+  "entry": "bolao.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-06-25T13:41:31.821Z",
+  "updatedAt": "2026-06-25T13:41:31.821Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

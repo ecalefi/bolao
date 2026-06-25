@@ -1,0 +1,596 @@
+<!doctype html>
+<!--
+  Bolão Copa Brasil — redesigned landing page
+  Brand: verde Brasil + ouro, clean/esportivo, vibrante
+  Seed: web-prototype template + brand-spec.md tokens
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Bolão Copa Brasil — crie grupos privados, desafie amigos e dê palpites nos jogos do Brasil na Copa do Mundo 2026. Quem acertar mais leva o prêmio." />
+  <meta name="theme-color" content="#f1faf2" />
+  <meta property="og:title" content="Bolão Copa Brasil · Palpites na Copa" />
+  <meta property="og:description" content="Crie seu bolão privado, convide amigos e mostre quem entende mais de futebol. Palpites nos jogos do Brasil na Copa do Mundo 2026." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bolao.conectai.online" />
+  <title>Bolão Copa Brasil · Palpites na Copa</title>
+  <style>
+    /* ─── tokens — brand-spec.md ───────────────────────────────────── */
+    :root {
+      --bg:      oklch(98% 0.003 140);
+      --surface: oklch(100% 0 0);
+      --fg:      oklch(15% 0.02 150);
+      --muted:   oklch(45% 0.025 150);
+      --border:  oklch(88% 0.008 140);
+      --accent:  oklch(52% 0.17 145);
+      --gold:    oklch(78% 0.13 85);
+      --gold-text: oklch(55% 0.13 85);
+
+      --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+      --gold-soft:   color-mix(in oklch, var(--gold) 14%, transparent);
+      --fg-soft:     color-mix(in oklch, var(--fg) 6%, transparent);
+
+      --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono:    ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+      --fs-h1: clamp(44px, 6vw, 76px);
+      --fs-h2: clamp(32px, 4vw, 48px);
+      --fs-h3: 22px;
+      --fs-lead: 19px;
+      --fs-body: 16px;
+      --fs-meta: 13px;
+
+      --gap-xs: 8px;
+      --gap-sm: 12px;
+      --gap-md: 20px;
+      --gap-lg: 32px;
+      --gap-xl: 56px;
+      --gap-2xl: 96px;
+      --container: 1120px;
+      --gutter: 32px;
+
+      --radius: 10px;
+      --radius-lg: 16px;
+
+      --ease: cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    /* ─── reset & base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible, input:focus-visible, .screen-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius); }
+    button { font: inherit; cursor: pointer; }
+    p { text-wrap: pretty; }
+    h1, h2, h3, h4 { text-wrap: balance; }
+
+    /* ─── layout primitives ─────────────────────────────────────────── */
+    .container {
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+    .section {
+      padding-block: clamp(48px, 8vw, var(--gap-2xl));
+    }
+    .section + .section { border-top: 1px solid var(--border); }
+    .stack { display: flex; flex-direction: column; }
+    .stack > * + * { margin-top: var(--gap-md); }
+    .row { display: flex; align-items: center; gap: var(--gap-md); }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-md); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap-lg); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-lg); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-md); }
+    @media (max-width: 920px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .scoreboard-card { padding: 20px; }
+      .sb-crest { width: 52px; height: 52px; }
+      .sb-team-name { font-size: 13px; }
+      .sb-teams { gap: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+
+    /* ─── type ──────────────────────────────────────────────────────── */
+    .h1, h1 { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 800; line-height: 1.04; letter-spacing: -0.02em; margin: 0; }
+    .h2, h2 { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; line-height: 1.1; letter-spacing: -0.015em; margin: 0; }
+    .h3, h3 { font-size: var(--fs-h3); font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; margin: 0; }
+    .lead   { font-size: var(--fs-lead); line-height: 1.55; color: var(--muted); max-width: 60ch; margin: 0; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 var(--gap-md);
+    }
+    .meta { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--muted); }
+    .num  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* ─── chrome: nav + footer ──────────────────────────────────────── */
+    .topnav {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in oklch, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topnav-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; }
+    .topnav .logo {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topnav .logo svg { width: 22px; height: 22px; }
+    .topnav nav { display: flex; gap: var(--gap-lg); }
+    .topnav nav a { font-size: 14px; color: var(--muted); transition: color 0.15s; }
+    .topnav nav a:hover { color: var(--fg); }
+    .pagefoot { padding-block: var(--gap-xl); color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+    .pagefoot .row-between { flex-wrap: wrap; gap: var(--gap-md); }
+
+    /* ─── buttons ───────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 20px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      transition: transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+    .btn-primary:hover { background: color-mix(in oklch, var(--accent) 88%, black); }
+    .btn-gold { background: var(--gold); color: var(--fg); border-color: var(--gold); font-weight: 700; }
+    .btn-gold:hover { background: color-mix(in oklch, var(--gold) 88%, black); }
+    .btn-secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+    .btn-secondary:hover { border-color: var(--fg); }
+    .btn-ghost { background: transparent; color: var(--fg); border-color: transparent; padding-inline: 8px; }
+    .btn-ghost:hover { color: var(--accent); }
+    .btn-arrow::after { content: '→'; transition: transform 0.15s ease; }
+    .btn-arrow:hover::after { transform: translateX(2px); }
+
+    /* ─── card ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+    }
+    .card-flat { background: transparent; border: 0; padding: 0; }
+
+    /* ─── feature cell ──────────────────────────────────────────────── */
+    .feature .feature-mark {
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--accent);
+      margin-bottom: var(--gap-md);
+    }
+    .feature .feature-mark svg { width: 20px; height: 20px; }
+    .feature h3 { margin-bottom: 6px; }
+    .feature p  { margin: 0; color: var(--muted); font-size: 15px; }
+    .feature-group:hover .feature .feature-mark { border-color: var(--accent); color: var(--accent); transition: border-color 0.2s var(--ease), color 0.2s var(--ease); }
+
+    /* ─── stat ──────────────────────────────────────────────────────── */
+    .stat { animation: fade-up 0.5s var(--ease) both; }
+    .stat:nth-child(1) { animation-delay: 0.1s; }
+    .stat:nth-child(2) { animation-delay: 0.2s; }
+    .stat:nth-child(3) { animation-delay: 0.3s; }
+    .stat .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(56px, 8vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      font-weight: 700;
+    }
+    .stat .stat-num.green { color: var(--accent); }
+    .stat .stat-num.gold  { color: var(--gold-text); }
+    .stat .stat-label { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 24ch; }
+    .stat .stat-unit  { font-size: 0.5em; opacity: 0.7; margin-left: 2px; }
+
+    /* ─── hero variants ─────────────────────────────────────────────── */
+    .hero          { padding-block: clamp(80px, 12vw, 160px); }
+    .hero-center   { text-align: center; max-width: 32ch; margin-inline: auto; }
+    .hero h1       { margin-bottom: var(--gap-md); }
+    .hero .lead    { margin-bottom: var(--gap-lg); }
+    .hero-cta      { display: inline-flex; gap: var(--gap-sm); flex-wrap: wrap; }
+    .hero-center .hero-cta { justify-content: center; }
+    .hero-split    { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-2xl); align-items: center; }
+    @media (max-width: 920px) { .hero-split { grid-template-columns: 1fr; } }
+
+    /* ─── image placeholder ─────────────────────────────────────────── */
+    .ph-img {
+      background:
+        linear-gradient(135deg, var(--accent-soft), var(--gold-soft)),
+        var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 16 / 10;
+      display: grid; place-items: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .ph-img.square    { aspect-ratio: 1 / 1; }
+    .ph-img.wide      { aspect-ratio: 16 / 9; }
+    .ph-img.tall      { aspect-ratio: 3 / 4; }
+
+    /* ─── scoreboard card (hero visual) ─────────────────────────────── */
+    @keyframes fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .scoreboard-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+      animation: fade-up 0.5s var(--ease) both;
+    }
+    .sb-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sb-flag { font-size: 28px; line-height: 1; }
+    .sb-tournament {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .sb-teams {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+    .sb-team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .sb-crest {
+      width: 68px;
+      height: 68px;
+    }
+    .sb-crest svg { width: 100%; height: 100%; }
+    .sb-team-name {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--fg);
+    }
+    .sb-vs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sb-vs-label {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--fg);
+      letter-spacing: 0.02em;
+    }
+    .sb-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .sb-dot { color: var(--border); }
+
+    /* ─── screen launcher cards ─────────────────────────────────────── */
+    .screen-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: box-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+      cursor: pointer;
+      color: inherit;
+      text-decoration: none;
+    }
+    .screen-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+    .screen-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .screen-card .preview {
+      aspect-ratio: 16 / 10;
+      background: var(--fg-soft);
+      border-radius: var(--radius);
+      margin-bottom: var(--gap-md);
+      display: grid; place-items: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .screen-card h3 { margin-bottom: 4px; }
+    .screen-card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .screen-card .card-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: var(--gap-md);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .screen-card .card-link::after { content: '→'; }
+
+    /* ─── form field ────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .input, .textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--fg);
+      font: inherit;
+      font-size: 15px;
+    }
+    .input:focus, .textarea:focus {
+      outline: 2px solid var(--accent-soft);
+      border-color: var(--accent);
+    }
+
+    /* ─── decorative elements ───────────────────────────────────────── */
+    .gold-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      background: var(--gold-soft);
+      color: color-mix(in oklch, var(--gold) 40%, var(--fg));
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <!-- ═══ topnav ═══ -->
+  <header class="topnav" data-od-id="topnav">
+    <div class="container topnav-inner">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+        Bolão Copa Brasil
+      </span>
+      <nav aria-label="Navegação principal">
+        <a href="#features">Como funciona</a>
+        <a href="#stats">Números</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <button type="button" class="btn btn-primary" data-scroll="cta">Criar bolão</button>
+    </div>
+  </header>
+
+  <main id="content">
+
+    <!-- ═══ Hero — split ═══ -->
+    <section class="section hero" data-od-id="hero">
+      <div class="container hero-split">
+        <div>
+          <p class="eyebrow">COPA DO MUNDO 2026 · BRASIL</p>
+          <h1>Seu bolão, suas regras.<br/>Brasil na Copa.</h1>
+          <p class="lead" style="margin-top: 20px;">Crie um grupo privado, desafie seus amigos e dê palpites nos jogos do Brasil. Quem acertar mais leva o prêmio.</p>
+          <div class="hero-cta" style="margin-top: 28px;">
+            <button type="button" class="btn btn-primary btn-arrow" data-scroll="cta">Criar bolão</button>
+            <button type="button" class="btn btn-secondary" data-scroll="features">Como funciona</button>
+          </div>
+        </div>
+        <div class="scoreboard-card" aria-label="Brasil vs próximo — placar e confronto">
+          <div class="sb-top">
+            <span class="sb-flag">🇧🇷</span>
+            <span class="sb-tournament">COPA DO MUNDO 2026 · GRUPO F</span>
+          </div>
+          <div class="sb-teams">
+            <div class="sb-team">
+              <div class="sb-crest sb-crest-brasil">
+                <svg viewBox="0 0 100 100" fill="none">
+                  <circle cx="50" cy="50" r="46" fill="#009c3b" stroke="#ffe11b" stroke-width="3"/>
+                  <path d="M50 25 L58 42 L77 42 L61 53 L67 72 L50 60 L33 72 L39 53 L23 42 L42 42 Z" fill="#ffe11b" opacity="0.9"/>
+                </svg>
+              </div>
+              <span class="sb-team-name">BRASIL</span>
+            </div>
+            <div class="sb-vs">
+              <span class="sb-vs-label">VS</span>
+            </div>
+            <div class="sb-team">
+              <div class="sb-crest">
+                <svg viewBox="0 0 100 100" fill="none">
+                  <circle cx="50" cy="50" r="46" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                  <text x="50" y="56" text-anchor="middle" font-size="20" fill="var(--muted)" font-family="var(--font-body)" font-weight="600">?</text>
+                </svg>
+              </div>
+              <span class="sb-team-name">ADVERSÁRIO</span>
+            </div>
+          </div>
+          <div class="sb-info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>A definir · Estádio a confirmar</span>
+            <span class="sb-dot">·</span>
+            <span>Fase de Grupos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Features — Como funciona ═══ -->
+    <section class="section" data-od-id="features" id="features">
+      <div class="container stack" style="gap: 56px;">
+        <div style="max-width: 36ch;">
+          <p class="eyebrow">COMO FUNCIONA</p>
+          <h2>Três passos para entrar na disputa.</h2>
+        </div>
+        <div class="grid-3 feature-group">
+          <div class="feature card-flat">
+            <div class="feature-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Crie seu grupo</h3>
+            <p>Monte um bolão com amigos, família ou colegas. Valor de entrada livre, regras simples.</p>
+          </div>
+          <div class="feature card-flat">
+            <div class="feature-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <h3>Convide e pague</h3>
+            <p>Cada participante faz um PIX via MercadoPago e entra no grupo. Rápido e seguro.</p>
+          </div>
+          <div class="feature card-flat">
+            <div class="feature-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <h3>Palpite e ganhe</h3>
+            <p>Antes de cada jogo do Brasil, dê seu palpite no placar exato. Acertos viram pontos. Maior pontuação leva o prêmio.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Stats — Números ═══ -->
+    <section class="section" data-od-id="stats" id="stats">
+      <div class="container">
+        <p class="eyebrow" style="margin-bottom: 40px;">BOLÃO EM NÚMEROS · 2026</p>
+        <div class="grid-3">
+          <div class="stat">
+            <div class="stat-num green num">7<span class="stat-unit">×</span></div>
+            <p class="stat-label">jogos do Brasil na Copa — cada um vale palpite.</p>
+          </div>
+          <div class="stat">
+            <div class="stat-num gold num">10</div>
+            <p class="stat-label">pontos por placar exato. Acertar o resultado também vale.</p>
+          </div>
+          <div class="stat">
+            <div class="stat-num green num">2,4K</div>
+            <p class="stat-label">participantes ativos nos bolões da última Copa.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Screen launcher ═══ -->
+    <section class="section" data-od-id="screens">
+      <div class="container">
+        <p class="eyebrow" style="margin-bottom:32px;">CONHEÇA O BOLÃO</p>
+        <div class="grid-3">
+          <a href="bolao.html" class="screen-card" tabindex="0">
+            <div class="preview">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <h3>Página do Grupo</h3>
+            <p>Jogos, palpites, ranking e premiação — a experiência completa do bolão.</p>
+            <span class="card-link">Ver protótipo</span>
+          </a>
+          <a href="admin.html" class="screen-card" tabindex="0">
+            <div class="preview">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/></svg>
+            </div>
+            <h3>Painel Admin</h3>
+            <p>Gerencie grupos, jogos e visualize todos os palpites em um dashboard.</p>
+            <span class="card-link">Ver protótipo</span>
+          </a>
+          <a href="https://bolao.conectai.online" class="screen-card" tabindex="0" target="_blank" rel="noopener">
+            <div class="preview">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
+            </div>
+            <h3>Versão Atual</h3>
+            <p>O app publicado com o tema cyberpunk atual — para comparar.</p>
+            <span class="card-link">Abrir site</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CTA strip ═══ -->
+    <section class="section" data-od-id="cta" id="cta" style="text-align:center;">
+      <div class="container" style="max-width:600px;">
+        <p class="eyebrow">VAMOS JOGAR?</p>
+        <h2>Pronto para criar seu bolão?</h2>
+        <p class="lead" style="margin:16px auto 32px;">Monte seu grupo, desafie seus amigos e mostre quem entende mais de futebol. A Copa está chegando.</p>
+        <div style="display:flex;gap:var(--gap-sm);justify-content:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-gold btn-arrow" style="font-size:17px;padding:14px 28px;">Criar bolão</button>
+          <button type="button" class="btn btn-secondary" data-scroll="features">Como funciona</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══ footer ═══ -->
+  <footer class="pagefoot" data-od-id="footer">
+    <div class="container row-between">
+      <span>© Bolão Copa Brasil · 2026</span>
+      <span class="meta">feito por torcedores · bolao.conectai.online</span>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll helper — avoids scrollIntoView which breaks OD preview
+    document.querySelectorAll('[data-scroll]').forEach(el => {
+      el.addEventListener('click', () => {
+        const target = document.getElementById(el.dataset.scroll);
+        if (target) {
+          const top = target.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
