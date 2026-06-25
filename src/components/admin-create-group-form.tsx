@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { getPredefinedMatchesByDate } from "@/lib/predefined-matches";
 
 const todayMatches = getPredefinedMatchesByDate("2026-06-29");
@@ -36,38 +36,72 @@ function getCreateGroupErrorMessage(error: unknown) {
 export function AdminCreateGroupForm() {
   const [result, setResult] = useState<{ slug: string; invite_token: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [selectedFixtureId, setSelectedFixtureId] = useState(todayMatches[0]?.fixtureId ?? 0);
+  const submitLockRef = useRef(false);
+
+  const inviteLink = result ? `${location.origin}/bolao/${result.slug}?invite=${result.invite_token}` : "";
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(null);
-    const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/admin/groups", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.get("name"),
-        slug: form.get("slug"),
-        adminWhatsapp: form.get("adminWhatsapp"),
-        pixAmountCents: Math.round(Number(form.get("pixAmount")) * 100),
-        apiFootballFixtureId: selectedFixtureId,
-      }),
-    });
-    const json = await response.json();
 
-    if (!response.ok) {
-      setError(getCreateGroupErrorMessage(json.error));
+    if (submitLockRef.current) {
       return;
     }
 
-    setResult(json.group);
+    setError(null);
+    setCopied(false);
+    submitLockRef.current = true;
+    setIsSubmitting(true);
+    const form = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("/api/admin/groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.get("name"),
+          slug: form.get("slug"),
+          adminWhatsapp: form.get("adminWhatsapp"),
+          pixAmountCents: Math.round(Number(form.get("pixAmount")) * 100),
+          apiFootballFixtureId: selectedFixtureId,
+        }),
+      });
+      const json = await response.json();
+
+      if (!response.ok) {
+        setError(getCreateGroupErrorMessage(json.error));
+        return;
+      }
+
+      setResult(json.group);
+    } catch {
+      setError("Não foi possível criar o grupo agora. Verifique sua conexão e tente novamente.");
+    } finally {
+      submitLockRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!inviteLink) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+    } catch {
+      setError("Não foi possível copiar automaticamente. Selecione o link e copie manualmente.");
+    }
   };
 
   const inputClass =
     "mt-2 w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted outline-none ring-accent transition focus:border-accent focus:ring-2 focus:ring-accent/20";
 
   return (
-    <form className="rounded-xl border border-line bg-surface p-6" onSubmit={submit}>
+    <form aria-busy={isSubmitting} className="rounded-xl border border-line bg-surface p-6" onSubmit={submit}>
       <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Área admin</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold text-fg">Criar grupo de bolão</h1>
       <p className="mt-2 text-sm leading-6 text-muted">
@@ -131,9 +165,25 @@ export function AdminCreateGroupForm() {
         </div>
       </div>
 
-      <button className="mt-6 w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50">
-        Criar grupo com jogo selecionado
+      <button
+        className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={isSubmitting}
+        type="submit"
+      >
+        {isSubmitting ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+            Aguarde, criando grupo...
+          </>
+        ) : (
+          "Criar grupo com jogo selecionado"
+        )}
       </button>
+      {isSubmitting ? (
+        <p className="mt-3 text-center text-xs font-medium text-muted" role="status">
+          Estamos criando o grupo e gerando o link privado. Não feche esta tela.
+        </p>
+      ) : null}
       {error ? (
         <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm text-danger">{error}</p>
       ) : null}
@@ -148,9 +198,16 @@ export function AdminCreateGroupForm() {
           </p>
           <div className="my-4 h-px bg-success/20" />
           <strong>Link privado gerado:</strong>
-          <code className="mt-2 block break-all rounded-xl border border-success/20 bg-surface p-3 text-success">
-            {`${location.origin}/bolao/${result.slug}?invite=${result.invite_token}`}
-          </code>
+          <div className="mt-2 flex flex-col gap-3 rounded-xl border border-success/20 bg-surface p-3 sm:flex-row sm:items-center">
+            <code className="min-w-0 flex-1 break-all text-success">{inviteLink}</code>
+            <button
+              className="rounded-full bg-accent px-4 py-2 font-display text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-accent-hover"
+              onClick={copyInviteLink}
+              type="button"
+            >
+              {copied ? "Link copiado" : "Copiar link"}
+            </button>
+          </div>
         </div>
       ) : null}
     </form>
