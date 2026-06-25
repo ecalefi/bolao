@@ -15,8 +15,8 @@ export type PredefinedMatch = {
 
 const PREDEFINED_MATCHES: PredefinedMatch[] = [
   {
-    fixtureId: -202606241900,
-    startsAt: "2026-06-24T19:00:00-03:00",
+    fixtureId: -202606291400,
+    startsAt: "2026-06-29T14:00:00-03:00",
     status: "scheduled",
     league: {
       id: -1,
@@ -26,7 +26,7 @@ const PREDEFINED_MATCHES: PredefinedMatch[] = [
       season: 2026,
     },
     homeTeam: { id: -101, name: "Brasil" },
-    awayTeam: { id: -102, name: "Escócia" },
+    awayTeam: { id: -102, name: "Japão" },
   },
 ];
 
