@@ -71,7 +71,11 @@ export function AdminCreateGroupForm() {
       </label>
 
       <div className="mt-5 rounded-xl border border-accent/15 bg-accent/5 p-4">
-        <p className="font-display text-sm font-bold text-accent">Jogo do grupo</p>
+        <p className="font-display text-sm font-bold text-accent">
+          {todayMatches.length === 1
+            ? `${todayMatches[0].homeTeam.name} × ${todayMatches[0].awayTeam.name}`
+            : "Selecione o jogo do bolão"}
+        </p>
         <div className="mt-3 space-y-3">
           {todayMatches.map((match) => (
             <label
