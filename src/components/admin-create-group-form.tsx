@@ -5,6 +5,34 @@ import { getPredefinedMatchesByDate } from "@/lib/predefined-matches";
 
 const todayMatches = getPredefinedMatchesByDate("2026-06-29");
 
+function getCreateGroupErrorMessage(error: unknown) {
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error && typeof error === "object") {
+    const flattened = error as {
+      formErrors?: unknown[];
+      fieldErrors?: Record<string, unknown[]>;
+    };
+
+    const formError = flattened.formErrors?.find((message) => typeof message === "string");
+    if (typeof formError === "string") {
+      return formError;
+    }
+
+    const fieldErrors = Object.values(flattened.fieldErrors ?? {})
+      .flat()
+      .filter((message): message is string => typeof message === "string");
+
+    if (fieldErrors.length > 0) {
+      return fieldErrors.join(" ");
+    }
+  }
+
+  return "Erro ao criar grupo. Confira os campos e tente novamente.";
+}
+
 export function AdminCreateGroupForm() {
   const [result, setResult] = useState<{ slug: string; invite_token: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +56,7 @@ export function AdminCreateGroupForm() {
     const json = await response.json();
 
     if (!response.ok) {
-      setError(json.error?.formErrors?.[0] ?? json.error ?? "Erro ao criar grupo.");
+      setError(getCreateGroupErrorMessage(json.error));
       return;
     }
 
