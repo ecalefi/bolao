@@ -49,48 +49,52 @@ export default async function GroupPage({
   }
 
   return (
-    <main className="scanlines relative min-h-screen overflow-hidden bg-[#0F0F23] px-6 py-8 text-slate-100">
-      <div className="grid-bg pointer-events-none absolute inset-0 opacity-40" />
-      <div className="pointer-events-none absolute -left-20 top-20 h-72 w-72 rounded-full bg-violet-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-rose-500/15 blur-3xl" />
-
-      <div className="relative mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_440px] lg:items-center">
+    <main className="relative flex-1 px-6 py-10">
+      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_460px] lg:items-start">
         <section>
-          <p className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.25em] text-violet-300">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
+          <p className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+            <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" />
             Convite privado
           </p>
-          <h1 className="mt-5 font-display text-4xl tracking-tight sm:text-6xl">
+          <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
             {group?.name ?? "Bolão Copa do Mundo"}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-400">
+          <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
             Entre no grupo, confirme seu WhatsApp, pague via PIX e registre seu palpite antes da bola rolar.
           </p>
 
           {match ? (
-            <div className="mt-6 rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-600/20 to-rose-500/10 p-5 neon-border">
-              <p className="font-display text-xs uppercase tracking-[0.2em] text-violet-300">Jogo do bolão</p>
-              <h2 className="mt-3 font-display text-3xl">{match.home_team} <span className="text-slate-500">×</span> {match.away_team}</h2>
-              <p className="mt-2 text-sm text-slate-400">{formatDateTime(match.starts_at)}</p>
+            <div className="mt-6 rounded-xl border border-line bg-surface p-5">
+              <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Jogo do bolão</p>
+              <h2 className="mt-2 font-display text-3xl font-extrabold">
+                {match.home_team} <span className="text-muted">×</span> {match.away_team}
+              </h2>
+              <p className="mt-1.5 text-sm text-muted">{formatDateTime(match.starts_at)}</p>
             </div>
           ) : null}
 
           {group ? (
-            <div className="mt-4 inline-flex items-center gap-3 rounded-xl border border-rose-500/20 bg-rose-500/10 px-5 py-3">
-              <span className="font-display text-2xl text-rose-400">{formatCurrency(group.pix_amount_cents)}</span>
-              <span className="text-sm text-slate-400">por participante via PIX</span>
+            <div className="mt-4 inline-flex items-center gap-3 rounded-xl border border-gold/20 bg-gold/8 px-5 py-3">
+              <span className="font-display text-2xl font-extrabold text-gold-text">{formatCurrency(group.pix_amount_cents)}</span>
+              <span className="text-sm text-muted">por participante via PIX</span>
             </div>
           ) : null}
 
-          <div className="mt-6 grid gap-3 text-sm text-slate-400 sm:grid-cols-3">
-            <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-4">
-              <strong className="font-display text-violet-400">1.</strong> Identifique-se
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-line bg-surface p-4">
+              <p className="font-display text-sm font-bold text-accent">1.</p>
+              <p className="text-sm text-fg">Identifique-se</p>
+              <p className="mt-0.5 text-xs text-muted">Nome e WhatsApp</p>
             </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-4">
-              <strong className="font-display text-violet-400">2.</strong> Pague o PIX
+            <div className="rounded-xl border border-line bg-surface p-4">
+              <p className="font-display text-sm font-bold text-accent">2.</p>
+              <p className="text-sm text-fg">Pague o PIX</p>
+              <p className="mt-0.5 text-xs text-muted">Valor do bolão</p>
             </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-4">
-              <strong className="font-display text-violet-400">3.</strong> Dê seu palpite
+            <div className="rounded-xl border border-line bg-surface p-4">
+              <p className="font-display text-sm font-bold text-accent">3.</p>
+              <p className="text-sm text-fg">Dê seu palpite</p>
+              <p className="mt-0.5 text-xs text-muted">Antes da bola rolar</p>
             </div>
           </div>
         </section>
@@ -98,9 +102,9 @@ export default async function GroupPage({
         {invite ? (
           <JoinGroupForm inviteToken={invite} />
         ) : (
-          <section className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-slate-100 shadow-2xl shadow-violet-900/20">
-            <h2 className="font-display text-2xl">Convite inválido</h2>
-            <p className="mt-2 text-slate-400">Peça ao administrador o link privado completo do bolão.</p>
+          <section className="rounded-xl border border-line bg-surface p-6">
+            <h2 className="font-display text-2xl font-extrabold">Convite inválido</h2>
+            <p className="mt-2 text-muted">Peça ao administrador o link privado completo do bolão.</p>
           </section>
         )}
       </div>

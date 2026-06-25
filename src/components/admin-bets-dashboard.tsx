@@ -63,16 +63,16 @@ const initials = (name: string) =>
     .join("");
 
 const avatarColors = [
-  "bg-violet-600",
+  "bg-accent",
   "bg-sky-600",
-  "bg-rose-600",
   "bg-amber-600",
   "bg-cyan-600",
-  "bg-emerald-600",
+  "bg-success",
+  "bg-blue-600",
 ];
 
 const colorForName = (name: string) =>
-  avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-slate-600";
+  avatarColors[name.charCodeAt(0) % avatarColors.length] ?? "bg-line";
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
@@ -81,20 +81,20 @@ const getBetStatusView = (status: string, points: number | null) => {
   if (status === "scored") {
     return {
       label: `${points ?? 0} pts`,
-      className: (points ?? 0) > 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-700 text-slate-400",
+      className: (points ?? 0) > 0 ? "bg-success/10 text-success" : "bg-surface-alt text-muted",
     };
   }
 
   if (status === "locked") {
     return {
       label: "Aguardando resultado",
-      className: "bg-amber-500/10 text-amber-400",
+      className: "bg-warning/10 text-warning",
     };
   }
 
   return {
     label: "Aguardando jogo",
-    className: "bg-violet-500/10 text-violet-300",
+    className: "bg-accent/8 text-accent",
   };
 };
 
@@ -204,18 +204,18 @@ export function AdminBetsDashboard() {
   };
 
   const inputClass =
-    "w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-3 text-slate-100 outline-none ring-violet-500 transition focus:border-violet-500 focus:bg-slate-900 focus:ring-2";
+    "w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted outline-none ring-accent transition focus:border-accent focus:ring-2 focus:ring-accent/20";
 
   return (
-    <section className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 shadow-xl shadow-violet-900/10 backdrop-blur-sm">
-      <p className="font-display text-sm uppercase tracking-[0.2em] text-violet-400">Gestão do grupo</p>
-      <h2 className="mt-2 font-display text-2xl text-slate-100">Ver palpites dos participantes</h2>
+    <section className="rounded-xl border border-line bg-surface p-6">
+      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Gestão do grupo</p>
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-fg">Ver palpites dos participantes</h2>
 
       {!otpRequest && !auth ? (
         <form className="mt-5 space-y-4" onSubmit={requestOtp}>
           <input className={inputClass} placeholder="Slug do grupo" required value={groupSlug} onChange={(e) => setGroupSlug(e.target.value)} />
           <input className={inputClass} placeholder="WhatsApp admin" required value={whatsapp} onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))} />
-          <button className="w-full cursor-pointer rounded-full bg-rose-500 px-6 py-3 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60" disabled={loading}>
+          <button className="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
             {loading ? "Enviando..." : "Enviar código admin"}
           </button>
         </form>
@@ -223,16 +223,16 @@ export function AdminBetsDashboard() {
 
       {otpRequest && !auth ? (
         <form className="mt-5 space-y-4" onSubmit={verifyOtp}>
-          <p className="text-sm text-slate-400">Código enviado para {otpRequest.participant.whatsapp}.</p>
+          <p className="text-sm text-muted">Código enviado para {otpRequest.participant.whatsapp}.</p>
           <input
-            className="w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-3 text-center font-display text-2xl tracking-[0.35em] text-slate-100 outline-none ring-violet-500 transition focus:bg-slate-900 focus:ring-2"
+            className="w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-center font-display text-2xl font-bold tracking-[0.35em] text-fg outline-none ring-accent transition focus:ring-2 focus:ring-accent/20"
             maxLength={6}
             placeholder="000000"
             required
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
           />
-          <button className="w-full cursor-pointer rounded-full bg-rose-500 px-6 py-3 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60" disabled={loading}>
+          <button className="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
             {loading ? "Verificando..." : "Validar e abrir gestão"}
           </button>
         </form>
@@ -242,16 +242,16 @@ export function AdminBetsDashboard() {
         <div className="mt-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 font-display text-sm text-white shadow-lg shadow-violet-500/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-display text-sm font-bold text-white shadow-sm">
                 {initials(auth.participant.name)}
               </div>
               <div>
-                <p className="font-display text-sm text-slate-100">{auth.group.name}</p>
-                <p className="text-xs text-slate-500">Admin: {auth.participant.name}</p>
+                <p className="font-display text-sm font-bold text-fg">{auth.group.name}</p>
+                <p className="text-xs text-muted">Admin: {auth.participant.name}</p>
               </div>
             </div>
             <button
-              className="cursor-pointer rounded-full border border-slate-600 bg-slate-800/50 px-4 py-2 text-sm font-bold text-slate-300 transition-colors duration-200 hover:bg-slate-800 disabled:opacity-60"
+              className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm font-bold text-muted transition-colors duration-200 hover:bg-surface-alt disabled:opacity-50"
               onClick={() => loadBets()}
               disabled={loading}
             >
@@ -260,15 +260,15 @@ export function AdminBetsDashboard() {
           </div>
 
           {prize ? (
-            <div className="mt-5 rounded-xl border border-slate-700 bg-slate-900/40 p-4">
+            <div className="mt-5 rounded-xl border border-line bg-surface-alt p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-display text-sm uppercase tracking-[0.18em] text-violet-400">Premiação</p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Arrecadado: <strong className="text-slate-100">{formatCurrency(prize.totalAmountCents)}</strong> · Pagos: {prize.paidParticipantsCount}
+                  <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Premiação</p>
+                  <p className="mt-1 text-sm text-muted">
+                    Arrecadado: <strong className="text-fg">{formatCurrency(prize.totalAmountCents)}</strong> · Pagos: {prize.paidParticipantsCount}
                   </p>
                 </div>
-                <span className="rounded-full border border-slate-600 px-3 py-1 text-xs font-bold text-slate-300">
+                <span className="rounded-full border border-line px-3 py-1 text-xs font-bold text-muted">
                   {prize.prizeStatus === "rolled_over"
                     ? "Acumulado"
                     : prize.prizeStatus === "refunded"
@@ -282,19 +282,19 @@ export function AdminBetsDashboard() {
               </div>
 
               {prize.winnerCount > 0 ? (
-                <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+                <div className="mt-4 rounded-lg border border-success/20 bg-success/10 p-3 text-sm text-success">
                   Prêmio por vencedor: <strong>{formatCurrency(prize.prizePerWinnerCents)}</strong>. Vencedores: {prize.winners.map((winner) => winner.name).join(", ")}.
                 </div>
               ) : null}
 
               {prize.hasNoWinner ? (
-                <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-200">
+                <div className="mt-4 rounded-lg border border-warning/20 bg-warning/10 p-3 text-sm text-warning">
                   Nenhum palpite acertou o placar final. O administrador deve decidir se o valor será acumulado ou reembolsado.
                 </div>
               ) : null}
 
               {prize.currentDecision ? (
-                <div className="mt-4 rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-3 text-sm text-cyan-200">
+                <div className="mt-4 rounded-lg border border-accent/20 bg-accent/8 p-3 text-sm text-accent">
                   Decisão registrada: {prize.currentDecision === "rollover" ? `acumular ${formatCurrency(prize.rolloverAmountCents)} para o próximo jogo` : "reembolsar todos os participantes"}.
                 </div>
               ) : null}
@@ -302,14 +302,14 @@ export function AdminBetsDashboard() {
               {prize.canDecideNoWinner ? (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <button
-                    className="cursor-pointer rounded-full border border-violet-500/40 bg-violet-500/10 px-4 py-3 font-bold text-violet-200 transition hover:bg-violet-500/20 disabled:opacity-60"
+                    className="cursor-pointer rounded-full border border-accent/25 bg-accent/8 px-4 py-3 font-bold text-accent transition hover:bg-accent/15 disabled:opacity-50"
                     disabled={loading}
                     onClick={() => decideNoWinner("rollover")}
                   >
                     Acumular para o próximo jogo
                   </button>
                   <button
-                    className="cursor-pointer rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-3 font-bold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-60"
+                    className="cursor-pointer rounded-full border border-danger/25 bg-danger/8 px-4 py-3 font-bold text-danger transition hover:bg-danger/15 disabled:opacity-50"
                     disabled={loading}
                     onClick={() => decideNoWinner("refund")}
                   >
@@ -320,27 +320,27 @@ export function AdminBetsDashboard() {
             </div>
           ) : null}
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {bets.map((bet) => {
               const statusView = getBetStatusView(bet.status, bet.points);
 
               return (
-                <div key={bet.id} className="rounded-xl border border-slate-700 bg-slate-900/30 p-4 transition-colors duration-200 hover:border-violet-500/40">
+                <div key={bet.id} className="rounded-xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs text-white ${colorForName(bet.participants?.name ?? "?")}`}>
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs font-bold text-white ${colorForName(bet.participants?.name ?? "?")}`}>
                       {initials(bet.participants?.name ?? "?")}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-display text-sm text-slate-100">{bet.participants?.name ?? "-"}</p>
-                      <p className="text-xs text-slate-500">{bet.participants?.whatsapp ?? "-"}</p>
+                      <p className="truncate font-display text-sm font-bold text-fg">{bet.participants?.name ?? "-"}</p>
+                      <p className="text-xs text-muted">{bet.participants?.whatsapp ?? "-"}</p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">{bet.matches?.home_team} x {bet.matches?.away_team}</p>
-                  <p className="mt-1 font-display text-2xl text-violet-400">
-                    {bet.home_score_prediction} <span className="text-slate-600">×</span> {bet.away_score_prediction}
+                  <p className="mt-3 text-xs text-muted">{bet.matches?.home_team} x {bet.matches?.away_team}</p>
+                  <p className="mt-1 font-display text-2xl font-extrabold tabular-nums text-accent">
+                    {bet.home_score_prediction} <span className="text-muted">×</span> {bet.away_score_prediction}
                   </p>
                   <div className="mt-2 flex items-center justify-between">
-                    <span className={`rounded-full px-2 py-1 font-display text-xs ${statusView.className}`}>
+                    <span className={`rounded-full px-2 py-1 font-display text-xs font-bold ${statusView.className}`}>
                       {statusView.label}
                     </span>
                   </div>
@@ -348,7 +348,7 @@ export function AdminBetsDashboard() {
               );
             })}
             {bets.length === 0 ? (
-              <div className="col-span-full rounded-xl bg-slate-900/30 p-6 text-center text-slate-500">
+              <div className="col-span-full rounded-xl bg-surface-alt p-6 text-center text-muted">
                 Nenhum palpite registrado ainda.
               </div>
             ) : null}
@@ -356,7 +356,9 @@ export function AdminBetsDashboard() {
         </div>
       ) : null}
 
-      {message ? <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-400">{message}</p> : null}
+      {message ? (
+        <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm text-danger">{message}</p>
+      ) : null}
     </section>
   );
 }

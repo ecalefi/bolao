@@ -1,69 +1,105 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #0F0F23;
-  --color-bg-card: #1A1A2E;
-  --color-bg-elevated: #25254A;
-  --color-primary: #7C3AED;
-  --color-primary-light: #A78BFA;
-  --color-cta: #F43F5E;
-  --color-cta-hover: #E11D48;
-  --color-accent: #00FFFF;
-  --color-success: #10B981;
-  --color-warning: #FBBF24;
-  --color-danger: #EF4444;
-  --color-text: #E2E8F0;
-  --color-text-muted: #94A3B8;
-  --color-border: #334155;
+  --color-bg: oklch(98% 0.003 140);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-alt: oklch(96% 0.005 140);
+  --color-fg: oklch(15% 0.02 150);
+  --color-muted: oklch(45% 0.025 150);
+  --color-line: oklch(88% 0.008 140);
+  --color-accent: oklch(52% 0.17 145);
+  --color-accent-hover: oklch(45% 0.17 145);
+  --color-gold: oklch(78% 0.13 85);
+  --color-gold-text: oklch(55% 0.13 85);
+  --color-success: oklch(55% 0.15 145);
+  --color-warning: oklch(75% 0.13 85);
+  --color-danger: oklch(55% 0.18 25);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-mono: ui-monospace, 'JetBrains Mono', 'IBM Plex Mono', Menlo, monospace;
 }
 
 body {
   background: var(--color-bg);
-  color: var(--color-text);
+  color: var(--color-fg);
   font-family: var(--font-body), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Neon glow utility */
-.neon-text {
-  text-shadow: 0 0 10px rgba(124, 58, 237, 0.5), 0 0 20px rgba(124, 58, 237, 0.3);
+/* Esportivo utilities */
+.score-input {
+  height: 3.5rem;
+  width: 5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 0 0.75rem;
+  text-align: center;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-fg);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -moz-appearance: textfield;
 }
 
-.neon-text-cta {
-  text-shadow: 0 0 10px rgba(244, 63, 94, 0.5), 0 0 20px rgba(244, 63, 94, 0.3);
+.score-input::-webkit-inner-spin-button,
+.score-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.neon-border {
-  box-shadow: 0 0 15px rgba(124, 58, 237, 0.3), inset 0 0 15px rgba(124, 58, 237, 0.1);
+.score-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 20%, transparent);
 }
 
-.neon-border-cta {
-  box-shadow: 0 0 15px rgba(244, 63, 94, 0.3), inset 0 0 15px rgba(244, 63, 94, 0.1);
+/* Status pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
-/* Grid background pattern */
-.grid-bg {
-  background-image:
-    linear-gradient(rgba(124, 58, 237, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
+.pill-success {
+  background: color-mix(in oklch, var(--color-success) 12%, transparent);
+  color: var(--color-success);
 }
 
-/* Scanline overlay */
-.scanlines::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
+.pill-warning {
+  background: color-mix(in oklch, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
+}
+
+.pill-danger {
+  background: color-mix(in oklch, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+}
+
+.pill-neutral {
+  background: color-mix(in oklch, var(--color-muted) 10%, transparent);
+  color: var(--color-muted);
+}
+
+/* Tabular nums for scores */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

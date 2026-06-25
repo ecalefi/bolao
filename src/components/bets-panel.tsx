@@ -36,9 +36,7 @@ type BetPayload = {
 
 const safeReadJson = async (response: Response): Promise<MatchPayload> => {
   const text = await response.text();
-
   if (!text) return { matches: [], bets: [] };
-
   try {
     return JSON.parse(text) as MatchPayload;
   } catch {
@@ -48,9 +46,7 @@ const safeReadJson = async (response: Response): Promise<MatchPayload> => {
 
 const safeReadBetJson = async (response: Response): Promise<BetPayload> => {
   const text = await response.text();
-
   if (!text) return {};
-
   try {
     return JSON.parse(text) as BetPayload;
   } catch {
@@ -172,16 +168,16 @@ export function BetsPanel({
   if (loading) {
     return (
       <div className="mt-5 animate-pulse space-y-3">
-        <div className="h-6 w-32 rounded bg-slate-700" />
-        <div className="h-32 rounded-xl bg-slate-800" />
+        <div className="h-6 w-32 rounded bg-line" />
+        <div className="h-32 rounded-xl bg-surface-alt" />
       </div>
     );
   }
 
   return (
-    <section className="mt-6 border-t border-slate-700 pt-6">
-      <p className="font-display text-sm uppercase tracking-[0.2em] text-violet-400">Palpite liberado</p>
-      <h3 className="mt-2 font-display text-xl">Escolha o placar do jogo</h3>
+    <section className="mt-6 border-t border-line pt-6">
+      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Palpite liberado</p>
+      <h3 className="mt-2 font-display text-xl font-extrabold">Escolha o placar do jogo</h3>
 
       <div className="mt-4 space-y-4">
         {matches.map((match) => {
@@ -190,19 +186,19 @@ export function BetsPanel({
 
           return (
             <article
-              className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-600/10 to-rose-500/5 p-4"
+              className="rounded-xl border border-line bg-surface p-4"
               key={match.id}
             >
-              <p className="font-display text-sm text-violet-400">
+              <p className="font-display text-xs font-bold text-accent">
                 {startsAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
               </p>
-              <h4 className="mt-2 font-display text-xl">
-                {match.home_team} <span className="text-slate-500">×</span> {match.away_team}
+              <h4 className="mt-2 font-display text-xl font-extrabold">
+                {match.home_team} <span className="text-muted">×</span> {match.away_team}
               </h4>
-              <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="mt-4 flex items-center justify-center gap-4">
                 <input
                   aria-label={`Gols ${match.home_team}`}
-                  className="h-16 w-24 rounded-xl border border-slate-600 bg-slate-900/50 px-3 text-center font-display text-2xl text-slate-100 shadow-lg outline-none ring-violet-500 transition focus:ring-2"
+                  className="score-input"
                   min={0}
                   max={20}
                   type="number"
@@ -214,10 +210,10 @@ export function BetsPanel({
                     }))
                   }
                 />
-                <span className="font-display text-violet-500">×</span>
+                <span className="font-display text-xl font-bold text-muted">×</span>
                 <input
                   aria-label={`Gols ${match.away_team}`}
-                  className="h-16 w-24 rounded-xl border border-slate-600 bg-slate-900/50 px-3 text-center font-display text-2xl text-slate-100 shadow-lg outline-none ring-violet-500 transition focus:ring-2"
+                  className="score-input"
                   min={0}
                   max={20}
                   type="number"
@@ -231,25 +227,26 @@ export function BetsPanel({
                 />
               </div>
               <button
-                className="mt-5 w-full cursor-pointer rounded-full bg-rose-500 px-6 py-4 font-display text-white shadow-lg shadow-rose-500/30 transition-all duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-5 w-full cursor-pointer rounded-full bg-accent px-6 py-4 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={savingMatchId === match.id}
                 onClick={() => saveBet(match)}
               >
                 {savingMatchId === match.id ? "Salvando..." : currentBet ? "Atualizar palpite" : "Salvar palpite"}
               </button>
-              {currentBet ? <p className="mt-3 text-sm text-emerald-400">Palpite registrado.</p> : null}
+              {currentBet ? <p className="mt-3 text-sm text-success">Palpite registrado.</p> : null}
             </article>
           );
         })}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-800/30 p-4">
+      {/* All bets from group */}
+      <div className="mt-6 rounded-xl border border-line bg-surface p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="font-display text-sm uppercase tracking-[0.2em] text-violet-400">Palpites do grupo</p>
-            <h3 className="mt-1 font-display text-lg">Veja como a galera apostou</h3>
+            <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Palpites do grupo</p>
+            <h3 className="mt-1 font-display text-lg font-extrabold">Veja como a galera apostou</h3>
           </div>
-          <span className="rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs font-bold text-violet-400">
+          <span className="rounded-full border border-accent/20 bg-accent/8 px-3 py-1 text-xs font-bold text-accent">
             {allBets.length} {allBets.length === 1 ? "palpite" : "palpites"}
           </span>
         </div>
@@ -264,35 +261,45 @@ export function BetsPanel({
                 <div
                   className={`flex items-center justify-between gap-3 rounded-xl p-3 ring-1 transition-all duration-200 ${
                     isMine
-                      ? "bg-violet-500/15 ring-violet-500/40"
-                      : "bg-slate-900/30 ring-slate-700"
+                      ? "bg-accent/8 ring-accent/25"
+                      : "bg-surface-alt ring-line"
                   }`}
                   key={bet.id}
                 >
                   <div className="flex items-center gap-2">
                     {isMine ? (
-                      <span className="rounded-full bg-violet-600 px-2 py-0.5 font-display text-xs text-white">Você</span>
+                      <span className="rounded-full bg-accent px-2 py-0.5 font-display text-xs text-white">Você</span>
                     ) : null}
                     <div>
-                      <p className={`font-bold ${isMine ? "text-violet-300" : "text-slate-200"}`}>{bet.participant_name ?? "Participante"}</p>
-                      <p className="text-xs text-slate-500">{match ? `${match.home_team} x ${match.away_team}` : "Jogo do grupo"}</p>
+                      <p className={`text-sm font-bold ${isMine ? "text-accent" : "text-fg"}`}>
+                        {bet.participant_name ?? "Participante"}
+                      </p>
+                      <p className="text-xs text-muted">
+                        {match ? `${match.home_team} x ${match.away_team}` : "Jogo do grupo"}
+                      </p>
                     </div>
                   </div>
-                  <div className={`rounded-lg px-4 py-2 font-display text-lg shadow-sm ${isMine ? "bg-violet-600 text-white" : "bg-slate-800 text-violet-300"}`}>
-                    {bet.home_score_prediction} <span className="text-slate-500">×</span> {bet.away_score_prediction}
+                  <div className={`rounded-lg px-4 py-2 font-display text-lg font-bold tabular-nums shadow-sm ${
+                    isMine ? "bg-accent text-white" : "bg-surface-alt text-accent"
+                  }`}>
+                    {bet.home_score_prediction} <span className="text-muted">×</span> {bet.away_score_prediction}
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="mt-4 rounded-xl bg-slate-900/30 p-3 text-sm text-slate-500">
+          <p className="mt-4 rounded-xl bg-surface-alt p-3 text-sm text-muted">
             Seja o primeiro a registrar um palpite neste grupo.
           </p>
         )}
       </div>
 
-      {message ? <p className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-sm text-violet-300">{message}</p> : null}
+      {message ? (
+        <p className="mt-4 rounded-xl border border-accent/20 bg-accent/8 p-3 text-sm text-accent">
+          {message}
+        </p>
+      ) : null}
     </section>
   );
 }
