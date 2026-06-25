@@ -98,6 +98,13 @@ const getBetStatusView = (status: string, points: number | null) => {
   };
 };
 
+const normalizeSlugInput = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+
 export function AdminBetsDashboard() {
   const [groupSlug, setGroupSlug] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -208,15 +215,45 @@ export function AdminBetsDashboard() {
 
   return (
     <section className="rounded-xl border border-line bg-surface p-6">
-      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Gestão do grupo</p>
-      <h2 className="mt-2 font-display text-2xl font-extrabold text-fg">Ver palpites dos participantes</h2>
+      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Entrada do admin</p>
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-fg">Entrar no painel do bolão</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        Use o <strong className="text-fg">slug do bolão</strong> e o <strong className="text-fg">WhatsApp cadastrado como admin</strong>. Vamos enviar um código antes de liberar os palpites.
+      </p>
 
       {!otpRequest && !auth ? (
         <form className="mt-5 space-y-4" onSubmit={requestOtp}>
-          <input className={inputClass} placeholder="Slug do grupo" required value={groupSlug} onChange={(e) => setGroupSlug(e.target.value)} />
-          <input className={inputClass} placeholder="WhatsApp admin" required value={whatsapp} onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))} />
+          <label className="block text-sm font-medium text-muted" htmlFor="admin-group-slug">
+            Slug do bolão
+            <input
+              aria-describedby="admin-group-slug-help"
+              autoComplete="off"
+              className={`${inputClass} mt-2`}
+              id="admin-group-slug"
+              placeholder="Ex.: familia-copa"
+              required
+              value={groupSlug}
+              onChange={(e) => setGroupSlug(normalizeSlugInput(e.target.value))}
+            />
+            <span className="mt-2 block text-xs leading-5 text-muted" id="admin-group-slug-help">
+              É o nome curto que aparece no link do bolão: <strong className="text-accent">/bolao/seu-slug</strong>.
+            </span>
+          </label>
+          <label className="block text-sm font-medium text-muted" htmlFor="admin-whatsapp">
+            WhatsApp do admin
+            <input
+              autoComplete="tel"
+              className={`${inputClass} mt-2`}
+              id="admin-whatsapp"
+              inputMode="tel"
+              placeholder="Ex.: 11 99999-9999"
+              required
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))}
+            />
+          </label>
           <button className="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
-            {loading ? "Enviando..." : "Enviar código admin"}
+            {loading ? "Enviando código..." : "Entrar com código admin"}
           </button>
         </form>
       ) : null}
@@ -357,7 +394,12 @@ export function AdminBetsDashboard() {
       ) : null}
 
       {message ? (
-        <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm text-danger">{message}</p>
+        <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm leading-6 text-danger">
+          {message}
+          <span className="mt-1 block text-xs text-danger/80">
+            Confira se o slug é exatamente o mesmo do link e se o WhatsApp é o número cadastrado ao criar o bolão.
+          </span>
+        </p>
       ) : null}
     </section>
   );
