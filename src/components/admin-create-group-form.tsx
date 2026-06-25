@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { getPredefinedMatchesByDate } from "@/lib/predefined-matches";
 
-const todayMatches = getPredefinedMatchesByDate("2026-06-24");
+const todayMatches = getPredefinedMatchesByDate("2026-06-29");
 
 export function AdminCreateGroupForm() {
   const [result, setResult] = useState<{ slug: string; invite_token: string } | null>(null);
