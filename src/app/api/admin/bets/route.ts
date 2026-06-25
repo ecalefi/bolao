@@ -31,7 +31,18 @@ export async function GET(request: NextRequest) {
     const participantWhatsapp = participant ? normalizeBrazilWhatsapp(participant.whatsapp) : null;
     const groupAdminWhatsapp = group ? normalizeBrazilWhatsapp(group.admin_whatsapp) : null;
 
-    if (!participantWhatsapp || !groupAdminWhatsapp || participantWhatsapp !== groupAdminWhatsapp) {
+    const { data: adminMember } = await supabase
+      .from("group_members")
+      .select("id,role")
+      .eq("group_id", groupId)
+      .eq("participant_id", adminParticipantId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isGroupAdminByPhone = Boolean(participantWhatsapp && groupAdminWhatsapp && participantWhatsapp === groupAdminWhatsapp);
+    const isGroupAdminByMemberRole = Boolean(adminMember);
+
+    if (!isGroupAdminByPhone && !isGroupAdminByMemberRole) {
       return Response.json({ error: "Sem permissão para visualizar este grupo." }, { status: 403 });
     }
 

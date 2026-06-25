@@ -36,6 +36,22 @@ export async function POST(request: Request) {
       return Response.json({ error: participantError?.message ?? "Erro ao preparar admin." }, { status: 500 });
     }
 
+    const { error: adminMemberError } = await supabase
+      .from("group_members")
+      .upsert(
+        {
+          group_id: group.id,
+          participant_id: participant.id,
+          role: "admin",
+          status: "pending_payment",
+        },
+        { onConflict: "group_id,participant_id" },
+      );
+
+    if (adminMemberError) {
+      return Response.json({ error: adminMemberError.message }, { status: 500 });
+    }
+
     const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 10).toISOString();
 

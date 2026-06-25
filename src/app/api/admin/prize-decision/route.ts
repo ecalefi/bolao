@@ -39,7 +39,18 @@ export async function POST(request: NextRequest) {
     const participantWhatsapp = normalizeBrazilWhatsapp(participant.whatsapp);
     const groupAdminWhatsapp = normalizeBrazilWhatsapp(group.admin_whatsapp);
 
-    if (participantWhatsapp !== groupAdminWhatsapp) {
+    const { data: adminMember } = await supabase
+      .from("group_members")
+      .select("id,role")
+      .eq("group_id", groupId)
+      .eq("participant_id", adminParticipantId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isGroupAdminByPhone = participantWhatsapp === groupAdminWhatsapp;
+    const isGroupAdminByMemberRole = Boolean(adminMember);
+
+    if (!isGroupAdminByPhone && !isGroupAdminByMemberRole) {
       return Response.json({ error: "Sem permissão para decidir este grupo." }, { status: 403 });
     }
 
