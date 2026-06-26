@@ -19,7 +19,7 @@ export function AdminCreateMatchForm() {
   const [manualOpen, setManualOpen] = useState(false);
 
   const inputClass =
-    "mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 placeholder:text-slate-400 outline-none ring-emerald-500 transition focus:border-emerald-500 focus:ring-2";
+    "field-focus mt-2 w-full rounded-2xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted";
 
   const formatDateTime = (value: string) =>
     new Intl.DateTimeFormat("pt-BR", {
@@ -91,10 +91,10 @@ export function AdminCreateMatchForm() {
   };
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-xl shadow-emerald-950/10 ring-1 ring-emerald-100">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Jogos pré-cadastrados</p>
+    <div className="sport-card rounded-[1.75rem] p-5 sm:p-6">
+      <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-accent">Jogos pré-cadastrados</p>
 
-      <label className="mt-5 block text-sm font-medium text-slate-700">
+      <label className="mt-5 block text-sm font-medium text-muted">
         Slug do grupo
         <input
           className={inputClass}
@@ -109,21 +109,21 @@ export function AdminCreateMatchForm() {
       {matches.length > 0 ? (
         <div className="mt-5 max-h-[32rem] space-y-3 overflow-auto pr-1">
           {matches.map((match) => (
-            <div key={match.fixtureId} className="rounded-2xl border border-slate-200 p-4">
+            <div key={match.fixtureId} className="rounded-2xl border border-line bg-surface p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-700">
+                  <p className="font-mono text-xs font-bold uppercase tracking-[0.15em] text-accent">
                     {match.league ? `${match.league.name} • ${match.league.country}` : "Competição não informada"}
                   </p>
-                  <h3 className="mt-2 text-lg font-black text-slate-950">
+                  <h3 className="mt-2 font-display text-lg font-extrabold text-fg">
                     {match.homeTeam.name} x {match.awayTeam.name}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-muted">
                     {formatDateTime(match.startsAt)} • Status {match.status} • Fixture {match.fixtureId}
                   </p>
                 </div>
                 <button
-                  className="rounded-full bg-yellow-300 px-5 py-3 text-sm font-bold text-emerald-950 transition hover:bg-yellow-200 disabled:opacity-60"
+                  className="rounded-full bg-accent px-5 py-3 text-sm font-bold text-white transition hover:bg-accent-hover disabled:opacity-60"
                   disabled={savingFixtureId === match.fixtureId}
                   onClick={() => selectMatch(match)}
                   type="button"
@@ -137,7 +137,7 @@ export function AdminCreateMatchForm() {
       ) : null}
 
       <button
-        className="mt-5 text-sm font-semibold text-emerald-700 underline underline-offset-4"
+        className="mt-5 text-sm font-semibold text-accent underline underline-offset-4"
         onClick={() => setManualOpen((current) => !current)}
         type="button"
       >
@@ -145,32 +145,32 @@ export function AdminCreateMatchForm() {
       </button>
 
       {manualOpen ? (
-        <form className="mt-5 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200" onSubmit={submitManual}>
-          <p className="text-sm font-bold text-slate-950">Cadastro manual de fallback</p>
+        <form className="mt-5 rounded-2xl border border-line bg-surface-alt p-4" onSubmit={submitManual}>
+          <p className="font-display text-sm font-bold text-fg">Cadastro manual de fallback</p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-muted">
               Mandante
               <input className={inputClass} name="homeTeam" required />
             </label>
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-muted">
               Visitante
               <input className={inputClass} name="awayTeam" required />
             </label>
           </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-700">
+          <label className="mt-4 block text-sm font-medium text-muted">
             Data e hora
             <input className={inputClass} name="startsAt" required type="datetime-local" />
           </label>
 
-          <label className="mt-4 block text-sm font-medium text-slate-700">
+          <label className="mt-4 block text-sm font-medium text-muted">
             API-Football Fixture ID opcional
             <input className={inputClass} name="apiFootballFixtureId" placeholder="Ex.: 1234567" type="number" />
           </label>
 
           <button
-            className="mt-5 w-full rounded-full bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+            className="mt-5 min-h-12 w-full rounded-full bg-accent px-6 py-3 font-display font-extrabold text-white transition hover:bg-accent-hover disabled:opacity-60"
             disabled={savingFixtureId === -1}
           >
             {savingFixtureId === -1 ? "Cadastrando..." : "Cadastrar jogo manual"}
@@ -178,7 +178,7 @@ export function AdminCreateMatchForm() {
         </form>
       ) : null}
 
-      {message ? <p className="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-900">{message}</p> : null}
+      {message ? <p className="mt-4 rounded-2xl border border-accent/20 bg-accent/8 p-3 text-sm text-accent">{message}</p> : null}
     </div>
   );
 }

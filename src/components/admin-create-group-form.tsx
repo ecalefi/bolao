@@ -98,11 +98,11 @@ export function AdminCreateGroupForm() {
   };
 
   const inputClass =
-    "mt-2 w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted outline-none ring-accent transition focus:border-accent focus:ring-2 focus:ring-accent/20";
+    "field-focus mt-2 w-full rounded-2xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted";
 
   return (
-    <form aria-busy={isSubmitting} className="rounded-xl border border-line bg-surface p-6" onSubmit={submit}>
-      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Área admin</p>
+    <form aria-busy={isSubmitting} className="sport-card rounded-[1.75rem] p-5 sm:p-6" onSubmit={submit}>
+      <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-accent">Área admin</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold text-fg">Criar grupo de bolão</h1>
       <p className="mt-2 text-sm leading-6 text-muted">
         Defina o nome do grupo, valor fixo do PIX e WhatsApp do administrador. O link privado será gerado automaticamente.
@@ -132,7 +132,7 @@ export function AdminCreateGroupForm() {
         <input className={inputClass} name="pixAmount" placeholder="Ex.: 20" required type="number" step="0.01" />
       </label>
 
-      <div className="mt-5 rounded-xl border border-accent/15 bg-accent/5 p-4">
+      <div className="mt-5 rounded-2xl border border-accent/15 bg-accent/5 p-4">
         <p className="font-display text-sm font-bold text-accent">
           {todayMatches.length === 1
             ? `${todayMatches[0].homeTeam.name} × ${todayMatches[0].awayTeam.name}`
@@ -141,7 +141,7 @@ export function AdminCreateGroupForm() {
         <div className="mt-3 space-y-3">
           {todayMatches.map((match) => (
             <label
-              className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line bg-surface p-4 text-sm transition-all duration-200 hover:border-accent/30 hover:shadow-sm"
+              className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4 text-sm transition-all duration-200 hover:border-accent/30 hover:shadow-sm"
               key={match.fixtureId}
             >
               <span>
@@ -166,7 +166,7 @@ export function AdminCreateGroupForm() {
       </div>
 
       <button
-        className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-display text-base font-extrabold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isSubmitting}
         type="submit"
       >
@@ -185,12 +185,12 @@ export function AdminCreateGroupForm() {
         </p>
       ) : null}
       {error ? (
-        <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm text-danger">{error}</p>
+        <p className="mt-4 rounded-2xl border border-danger/20 bg-danger/8 p-3 text-sm text-danger">{error}</p>
       ) : null}
       {result ? (
-        <div className="mt-5 rounded-xl border border-success/20 bg-success/10 p-4 text-sm text-success">
+        <div className="mt-5 rounded-2xl border border-success/20 bg-success/10 p-4 text-sm text-success">
           <strong>Slug do grupo:</strong>
-          <code className="mt-2 block rounded-xl border border-success/20 bg-surface p-3 text-success">
+          <code className="mt-2 block rounded-2xl border border-success/20 bg-surface p-3 text-success">
             {result.slug}
           </code>
           <p className="mt-3 text-xs leading-5 text-success">
@@ -198,7 +198,7 @@ export function AdminCreateGroupForm() {
           </p>
           <div className="my-4 h-px bg-success/20" />
           <strong>Link privado gerado:</strong>
-          <div className="mt-2 flex flex-col gap-3 rounded-xl border border-success/20 bg-surface p-3 sm:flex-row sm:items-center">
+          <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-success/20 bg-surface p-3 sm:flex-row sm:items-center">
             <code className="min-w-0 flex-1 break-all text-success">{inviteLink}</code>
             <button
               className="rounded-full bg-accent px-4 py-2 font-display text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-accent-hover"

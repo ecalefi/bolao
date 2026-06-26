@@ -1,96 +1,130 @@
 import Link from "next/link";
 
+const features = [
+  {
+    title: "PIX e entrada controlada",
+    description: "O participante só avança para os palpites depois da confirmação do pagamento.",
+  },
+  {
+    title: "Link privado por grupo",
+    description: "Cada bolão tem convite próprio para manter a rodada fechada entre amigos.",
+  },
+  {
+    title: "Palpite com clima de jogo",
+    description: "Placar, horário e ranking do grupo ficam claros antes da bola rolar.",
+  },
+];
+
 export default function Home() {
   return (
-    <main className="relative flex-1">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-[1fr_420px] lg:items-center lg:py-24">
-        {/* Hero content */}
-        <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-accent">
-            <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" />
-            Bolão entre amigos
-          </p>
-          <h1 className="mt-6 max-w-3xl font-display text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-7xl">
-            Palpite, torça e <span className="text-accent">acompanhe</span> tudo pelo WhatsApp.
+    <main className="app-shell relative flex-1 overflow-hidden">
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-14">
+        <div className="sport-panel rounded-[1.75rem] p-5 sm:p-8 lg:p-10">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/8 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-accent">
+              <span className="h-2 w-2 animate-pulse-dot rounded-full bg-accent" />
+              Bolão Copa Brasil
+            </p>
+            <p className="rounded-full border border-gold/30 bg-gold/10 px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.14em] text-gold-text">
+              Jogo fechado
+            </p>
+          </div>
+
+          <h1 className="mt-8 max-w-4xl font-display text-5xl font-extrabold leading-[0.98] tracking-tight text-fg sm:text-6xl lg:text-7xl">
+            O bolão dos jogos do Brasil com cara de casa de apostas.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-            Crie grupos privados, escolha o jogo, receba por PIX e libere uma experiência simples para os participantes darem seus palpites.
+            Crie o grupo, defina o valor, compartilhe o convite privado e deixe cada participante confirmar o PIX antes de registrar o placar.
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              className="inline-flex cursor-pointer items-center rounded-full bg-accent px-8 py-4 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover hover:shadow-md"
+              className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-accent px-7 py-3 font-display text-base font-extrabold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent/30"
               href="/admin"
             >
               Criar meu bolão
             </Link>
-            <span className="inline-flex items-center rounded-full border border-line bg-surface px-8 py-4 font-semibold text-muted">
-              Link privado para cada grupo
+            <span className="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-surface-alt px-7 py-3 text-sm font-bold text-fg">
+              WhatsApp, PIX e palpite no mesmo fluxo
             </span>
           </div>
 
-          {/* Feature highlights */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
-              <svg className="mb-2 h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <p className="text-sm font-semibold text-fg">PIX automático</p>
-              <p className="mt-0.5 text-xs text-muted">Pagamento rápido e seguro</p>
-            </div>
-            <div className="rounded-xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
-              <svg className="mb-2 h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-              </svg>
-              <p className="text-sm font-semibold text-fg">Ranking do grupo</p>
-              <p className="mt-0.5 text-xs text-muted">Veja quem está na frente</p>
-            </div>
-            <div className="rounded-xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
-              <svg className="mb-2 h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              <p className="text-sm font-semibold text-fg">Notificações WhatsApp</p>
-              <p className="mt-0.5 text-xs text-muted">Acompanhe tudo em tempo real</p>
-            </div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            {features.map((feature, index) => (
+              <article className="market-strip rounded-2xl p-4" key={feature.title}>
+                <p className="font-mono text-xs font-bold text-accent">0{index + 1}</p>
+                <h2 className="mt-3 font-display text-base font-extrabold text-fg">{feature.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">{feature.description}</p>
+              </article>
+            ))}
           </div>
         </div>
 
-        {/* Scoreboard card */}
-        <div className="relative mx-auto w-full max-w-sm">
-          <div className="rounded-2xl border border-line bg-surface p-1 shadow-sm">
-            <div className="rounded-xl bg-surface-alt p-5">
-              <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-accent">COPA DO MUNDO 2026 · GRUPO F</p>
-              <div className="mt-5 flex items-center justify-center gap-6">
-                {/* Home team */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
-                    <svg className="h-8 w-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" />
-                      <path strokeLinecap="round" d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" fill="currentColor" />
-                    </svg>
-                  </div>
-                  <span className="font-display text-sm font-bold text-fg">Brasil</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-2xl font-bold text-line">×</span>
-                </div>
-                {/* Away team */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/15">
-                    <svg className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                  </div>
-                  <span className="font-display text-sm font-bold text-fg">Japão</span>
-                </div>
+        <aside className="sport-card relative mx-auto w-full max-w-xl overflow-hidden rounded-[1.75rem] p-5 sm:p-6">
+          <div className="rounded-3xl bg-surface-strong p-5 text-white">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-white/55">
+                  Copa do Mundo 2026
+                </p>
+                <h2 className="mt-1 font-display text-2xl font-extrabold">Rodada do grupo</h2>
               </div>
-              <p className="mt-4 text-center font-mono text-xs font-medium uppercase tracking-wider text-accent/70">
-                Domingo · 29 jun · 14h
-              </p>
+              <span className="rounded-full bg-accent px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.12em] text-white">
+                Aberto
+              </span>
+            </div>
+
+            <div className="mt-7 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+              <div className="text-center">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/8">
+                  <span className="font-display text-3xl font-extrabold text-gold">BR</span>
+                </div>
+                <p className="mt-3 font-display text-lg font-extrabold">Brasil</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-center text-fg shadow-sm">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Palpite</p>
+                <p className="mt-1 font-display text-3xl font-extrabold tabular-nums">
+                  2 <span className="text-muted">×</span> 1
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-white/8">
+                  <span className="font-display text-3xl font-extrabold text-white">JP</span>
+                </div>
+                <p className="mt-3 font-display text-lg font-extrabold">Japão</p>
+              </div>
+            </div>
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">Entrada</p>
+                <p className="mt-2 font-display text-xl font-extrabold">PIX</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">Grupo</p>
+                <p className="mt-2 font-display text-xl font-extrabold">Privado</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">Status</p>
+                <p className="mt-2 font-display text-xl font-extrabold">Antes do jogo</p>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="rounded-2xl border border-line bg-surface-alt p-4">
+              <p className="font-display text-sm font-extrabold text-fg">Operação simples para o administrador</p>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                Criação do grupo, geração de convite e gestão dos palpites seguem no painel atual.
+              </p>
+            </div>
+            <div className="gold-ticket rounded-2xl px-5 py-4 text-center">
+              <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Prêmio</p>
+              <p className="mt-1 font-display text-2xl font-extrabold text-gold-text">1º lugar</p>
+            </div>
+          </div>
+        </aside>
+      </section>
     </main>
   );
 }

@@ -3,27 +3,29 @@ import { AdminBetsDashboard } from "@/components/admin-bets-dashboard";
 
 export default function AdminPage() {
   return (
-    <main className="relative flex-1 px-6 py-10">
-      <div className="mx-auto max-w-6xl">
+    <main className="app-shell relative flex-1 px-5 py-8 sm:px-6 lg:py-12">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <section className="rounded-xl border border-line bg-surface p-6 md:p-8">
-          <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-accent">Configuração</p>
-          <h1 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+        <section className="sport-card overflow-hidden rounded-[1.75rem]">
+          <div className="bg-surface-strong p-6 text-white md:p-8">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white/60">Configuração</p>
+            <h1 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
             Painel do bolão
-          </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-muted">
-            Crie o grupo, defina o valor do PIX e compartilhe o link com os participantes. Eles entram com nome + WhatsApp e pagam antes de palpitar.
-          </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl border border-line bg-surface-alt p-4">
+            </h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-white/70">
+              Crie o grupo, defina o valor do PIX e compartilhe o link com os participantes. Eles entram com nome + WhatsApp e pagam antes de palpitar.
+            </p>
+          </div>
+          <div className="grid gap-4 p-5 md:grid-cols-3 md:p-6">
+            <div className="market-strip rounded-2xl p-4">
               <strong className="font-display text-sm text-accent">1.</strong>
               <span className="ml-2 text-sm text-fg">Criar grupo e escolher jogo</span>
             </div>
-            <div className="rounded-xl border border-line bg-surface-alt p-4">
+            <div className="market-strip rounded-2xl p-4">
               <strong className="font-display text-sm text-accent">2.</strong>
               <span className="ml-2 text-sm text-fg">Enviar link</span>
             </div>
-            <div className="rounded-xl border border-line bg-surface-alt p-4">
+            <div className="market-strip rounded-2xl p-4">
               <strong className="font-display text-sm text-accent">3.</strong>
               <span className="ml-2 text-sm text-fg">Gerir palpites</span>
             </div>
@@ -55,7 +57,7 @@ export default function AdminPage() {
           </section>
         </div>
 
-        <div className="mt-8 rounded-xl border border-line bg-surface p-5 text-sm leading-6 text-muted">
+        <div className="sport-panel mt-8 rounded-2xl p-5 text-sm leading-6 text-muted">
           <strong className="font-display text-fg">Dica:</strong> para cada novo bolão, repita o fluxo: criar grupo com jogo → compartilhar o link privado.
         </div>
       </div>

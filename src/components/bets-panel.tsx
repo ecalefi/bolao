@@ -176,8 +176,15 @@ export function BetsPanel({
 
   return (
     <section className="mt-6 border-t border-line pt-6">
-      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Palpite liberado</p>
-      <h3 className="mt-2 font-display text-xl font-extrabold">Escolha o placar do jogo</h3>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-accent">Mesa de palpites</p>
+          <h3 className="mt-2 font-display text-2xl font-extrabold">Escolha o placar do jogo</h3>
+        </div>
+        <span className="w-fit rounded-full border border-line bg-surface-alt px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.12em] text-muted">
+          {matches.length} {matches.length === 1 ? "jogo" : "jogos"}
+        </span>
+      </div>
 
       <div className="mt-4 space-y-4">
         {matches.map((match) => {
@@ -186,45 +193,59 @@ export function BetsPanel({
 
           return (
             <article
-              className="rounded-xl border border-line bg-surface p-4"
+              className="sport-panel rounded-2xl p-4"
               key={match.id}
             >
-              <p className="font-display text-xs font-bold text-accent">
-                {startsAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
-              </p>
-              <h4 className="mt-2 font-display text-xl font-extrabold">
-                {match.home_team} <span className="text-muted">×</span> {match.away_team}
-              </h4>
-              <div className="mt-4 flex items-center justify-center gap-4">
-                <input
-                  aria-label={`Gols ${match.home_team}`}
-                  className="score-input"
-                  min={0}
-                  max={20}
-                  type="number"
-                  value={predictions[match.id]?.home ?? ""}
-                  onChange={(event) =>
-                    setPredictions((current) => ({
-                      ...current,
-                      [match.id]: { home: event.target.value, away: current[match.id]?.away ?? "" },
-                    }))
-                  }
-                />
-                <span className="font-display text-xl font-bold text-muted">×</span>
-                <input
-                  aria-label={`Gols ${match.away_team}`}
-                  className="score-input"
-                  min={0}
-                  max={20}
-                  type="number"
-                  value={predictions[match.id]?.away ?? ""}
-                  onChange={(event) =>
-                    setPredictions((current) => ({
-                      ...current,
-                      [match.id]: { home: current[match.id]?.home ?? "", away: event.target.value },
-                    }))
-                  }
-                />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-accent">
+                  {startsAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                </p>
+                <span className={currentBet ? "pill pill-success" : "pill pill-neutral"}>
+                  {currentBet ? "Registrado" : "Aberto"}
+                </span>
+              </div>
+              <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-3">
+                <label className="min-w-0 text-center">
+                  <span className="mb-3 block break-words font-display text-sm font-extrabold leading-tight text-fg">
+                    {match.home_team}
+                  </span>
+                  <input
+                    aria-label={`Gols ${match.home_team}`}
+                    className="score-input"
+                    min={0}
+                    max={20}
+                    type="number"
+                    value={predictions[match.id]?.home ?? ""}
+                    onChange={(event) =>
+                      setPredictions((current) => ({
+                        ...current,
+                        [match.id]: { home: event.target.value, away: current[match.id]?.away ?? "" },
+                      }))
+                    }
+                  />
+                </label>
+                <span className="mt-10 rounded-2xl border border-line bg-surface-alt px-3 py-2 font-display text-xl font-bold text-muted">
+                  ×
+                </span>
+                <label className="min-w-0 text-center">
+                  <span className="mb-3 block break-words font-display text-sm font-extrabold leading-tight text-fg">
+                    {match.away_team}
+                  </span>
+                  <input
+                    aria-label={`Gols ${match.away_team}`}
+                    className="score-input"
+                    min={0}
+                    max={20}
+                    type="number"
+                    value={predictions[match.id]?.away ?? ""}
+                    onChange={(event) =>
+                      setPredictions((current) => ({
+                        ...current,
+                        [match.id]: { home: current[match.id]?.home ?? "", away: event.target.value },
+                      }))
+                    }
+                  />
+                </label>
               </div>
               <button
                 className="mt-5 w-full cursor-pointer rounded-full bg-accent px-6 py-4 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
@@ -240,7 +261,7 @@ export function BetsPanel({
       </div>
 
       {/* All bets from group */}
-      <div className="mt-6 rounded-xl border border-line bg-surface p-4">
+      <div className="sport-panel mt-6 rounded-2xl p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Palpites do grupo</p>
@@ -282,7 +303,7 @@ export function BetsPanel({
                   <div className={`rounded-lg px-4 py-2 font-display text-lg font-bold tabular-nums shadow-sm ${
                     isMine ? "bg-accent text-white" : "bg-surface-alt text-accent"
                   }`}>
-                    {bet.home_score_prediction} <span className="text-muted">×</span> {bet.away_score_prediction}
+                    {bet.home_score_prediction} <span className={isMine ? "text-white/60" : "text-muted"}>×</span> {bet.away_score_prediction}
                   </div>
                 </div>
               );

@@ -4,6 +4,7 @@
   --color-bg: oklch(98% 0.003 140);
   --color-surface: oklch(100% 0 0);
   --color-surface-alt: oklch(96% 0.005 140);
+  --color-surface-strong: oklch(18% 0.06 150);
   --color-fg: oklch(15% 0.02 150);
   --color-muted: oklch(45% 0.025 150);
   --color-line: oklch(88% 0.008 140);
@@ -27,7 +28,80 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: color-mix(in oklch, var(--color-accent) 22%, transparent);
+}
+
 /* Esportivo utilities */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, color-mix(in oklch, var(--color-line) 42%, transparent) 1px, transparent 1px),
+    linear-gradient(180deg, color-mix(in oklch, var(--color-line) 38%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
+  opacity: 0.38;
+}
+
+.sport-card {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  box-shadow: 0 20px 45px color-mix(in oklch, var(--color-fg) 8%, transparent);
+}
+
+.sport-panel {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  box-shadow: 0 12px 30px color-mix(in oklch, var(--color-fg) 5%, transparent);
+}
+
+.market-strip {
+  border: 1px solid color-mix(in oklch, var(--color-accent) 18%, var(--color-line));
+  background: color-mix(in oklch, var(--color-accent) 7%, var(--color-surface));
+}
+
+.team-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklch, var(--color-accent) 24%, var(--color-line));
+  background: color-mix(in oklch, var(--color-accent) 10%, white);
+  color: var(--color-accent);
+}
+
+.gold-ticket {
+  border: 1px solid color-mix(in oklch, var(--color-gold) 42%, var(--color-line));
+  background: color-mix(in oklch, var(--color-gold) 12%, white);
+}
+
+.field-focus {
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.field-focus:focus {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 20%, transparent);
+}
+
 .score-input {
   height: 3.5rem;
   width: 5rem;

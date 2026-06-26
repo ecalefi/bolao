@@ -211,11 +211,11 @@ export function AdminBetsDashboard() {
   };
 
   const inputClass =
-    "w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted outline-none ring-accent transition focus:border-accent focus:ring-2 focus:ring-accent/20";
+    "field-focus w-full rounded-2xl border border-line bg-surface-alt px-4 py-3 text-fg placeholder:text-muted";
 
   return (
-    <section className="rounded-xl border border-line bg-surface p-6">
-      <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Entrada do admin</p>
+    <section className="sport-card rounded-[1.75rem] p-5 sm:p-6">
+      <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-accent">Entrada do admin</p>
       <h2 className="mt-2 font-display text-2xl font-extrabold text-fg">Entrar no painel do bolão</h2>
       <p className="mt-2 text-sm leading-6 text-muted">
         Use o <strong className="text-fg">slug do bolão</strong> e o <strong className="text-fg">WhatsApp cadastrado como admin</strong>. Vamos enviar um código antes de liberar os palpites.
@@ -252,7 +252,7 @@ export function AdminBetsDashboard() {
               onChange={(e) => setWhatsapp(maskWhatsapp(e.target.value))}
             />
           </label>
-          <button className="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
+          <button className="min-h-12 w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-extrabold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
             {loading ? "Enviando código..." : "Entrar com código admin"}
           </button>
         </form>
@@ -262,14 +262,14 @@ export function AdminBetsDashboard() {
         <form className="mt-5 space-y-4" onSubmit={verifyOtp}>
           <p className="text-sm text-muted">Código enviado para {otpRequest.participant.whatsapp}.</p>
           <input
-            className="w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-center font-display text-2xl font-bold tracking-[0.35em] text-fg outline-none ring-accent transition focus:ring-2 focus:ring-accent/20"
+            className="field-focus w-full rounded-2xl border border-line bg-surface-alt px-4 py-3 text-center font-display text-2xl font-bold tracking-[0.35em] text-fg"
             maxLength={6}
             placeholder="000000"
             required
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
           />
-          <button className="w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
+          <button className="min-h-12 w-full cursor-pointer rounded-full bg-accent px-6 py-3 font-display text-base font-extrabold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50" disabled={loading}>
             {loading ? "Verificando..." : "Validar e abrir gestão"}
           </button>
         </form>
@@ -288,7 +288,7 @@ export function AdminBetsDashboard() {
               </div>
             </div>
             <button
-              className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm font-bold text-muted transition-colors duration-200 hover:bg-surface-alt disabled:opacity-50"
+              className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-sm font-bold text-muted transition-colors duration-200 hover:bg-surface-alt focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
               onClick={() => loadBets()}
               disabled={loading}
             >
@@ -297,7 +297,7 @@ export function AdminBetsDashboard() {
           </div>
 
           {prize ? (
-            <div className="mt-5 rounded-xl border border-line bg-surface-alt p-4">
+            <div className="mt-5 rounded-2xl border border-line bg-surface-alt p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-accent">Premiação</p>
@@ -319,19 +319,19 @@ export function AdminBetsDashboard() {
               </div>
 
               {prize.winnerCount > 0 ? (
-                <div className="mt-4 rounded-lg border border-success/20 bg-success/10 p-3 text-sm text-success">
+                <div className="mt-4 rounded-2xl border border-success/20 bg-success/10 p-3 text-sm text-success">
                   Prêmio por vencedor: <strong>{formatCurrency(prize.prizePerWinnerCents)}</strong>. Vencedores: {prize.winners.map((winner) => winner.name).join(", ")}.
                 </div>
               ) : null}
 
               {prize.hasNoWinner ? (
-                <div className="mt-4 rounded-lg border border-warning/20 bg-warning/10 p-3 text-sm text-warning">
+                <div className="mt-4 rounded-2xl border border-warning/20 bg-warning/10 p-3 text-sm text-warning">
                   Nenhum palpite acertou o placar final. O administrador deve decidir se o valor será acumulado ou reembolsado.
                 </div>
               ) : null}
 
               {prize.currentDecision ? (
-                <div className="mt-4 rounded-lg border border-accent/20 bg-accent/8 p-3 text-sm text-accent">
+                <div className="mt-4 rounded-2xl border border-accent/20 bg-accent/8 p-3 text-sm text-accent">
                   Decisão registrada: {prize.currentDecision === "rollover" ? `acumular ${formatCurrency(prize.rolloverAmountCents)} para o próximo jogo` : "reembolsar todos os participantes"}.
                 </div>
               ) : null}
@@ -362,7 +362,7 @@ export function AdminBetsDashboard() {
               const statusView = getBetStatusView(bet.status, bet.points);
 
               return (
-                <div key={bet.id} className="rounded-xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
+                <div key={bet.id} className="rounded-2xl border border-line bg-surface p-4 transition-shadow duration-200 hover:shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-xs font-bold text-white ${colorForName(bet.participants?.name ?? "?")}`}>
                       {initials(bet.participants?.name ?? "?")}
@@ -385,7 +385,7 @@ export function AdminBetsDashboard() {
               );
             })}
             {bets.length === 0 ? (
-              <div className="col-span-full rounded-xl bg-surface-alt p-6 text-center text-muted">
+              <div className="col-span-full rounded-2xl bg-surface-alt p-6 text-center text-muted">
                 Nenhum palpite registrado ainda.
               </div>
             ) : null}
@@ -394,7 +394,7 @@ export function AdminBetsDashboard() {
       ) : null}
 
       {message ? (
-        <p className="mt-4 rounded-xl border border-danger/20 bg-danger/8 p-3 text-sm leading-6 text-danger">
+        <p className="mt-4 rounded-2xl border border-danger/20 bg-danger/8 p-3 text-sm leading-6 text-danger">
           {message}
           <span className="mt-1 block text-xs text-danger/80">
             Confira se o slug é exatamente o mesmo do link e se o WhatsApp é o número cadastrado ao criar o bolão.
